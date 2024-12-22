@@ -61,7 +61,7 @@ The training consists two stages. Stage1 is to train a VQVAE for discrete tokeni
 
 ```
 staic_cond_dim = nums of columns of static conditions after data transformation using Betterdata data pipeline
-seq_len = num of time step in one time-series sample. E.g., sample period = 24hrs and sample interval = 1hr, then seq_len = 24
+seq_len = num of time steps in one time-series sample. E.g., sample period = 24hrs and sample interval = 1hr, then seq_len = 24
 ```
 
 ### Stage1
