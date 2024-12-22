@@ -28,7 +28,7 @@ pip install -r requirements.txt
 ## Dataset Preperation
 As of 12/22/2024, the conditional TS model only supports .csv file as the input data. All dataset should be in ".csv" form and follow the format below:
 Num_Col = Num_Static_Cond (after trasformation using Betterdata data pipeline) + Num_TS_Channel
-Walmart Dataset Example:
+### Walmart Dataset Example:
 
 
 ## Pre-trained Models
