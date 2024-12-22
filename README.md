@@ -29,9 +29,9 @@ pip install -r requirements.txt
 
 ## Pre-trained Models
 
-| Model | #Params | Num_Static_Conditions| Static_Cond_Dim | Num_TS_Channel (# of TS Features) | Download |
-|:---:|:---:|:---:|:---:|:---:|:---:|
-| Walmart-TS| 1.3M | 4 | 6 | 1 |[model](https://github.com/betterdataai/time-series-synthetic/blob/main/saved_models/stage2-Walmart.ckpt)|
+| Model | #Params | Num_Static_Conditions| Static_Cond_Dim | Num_TS_Channel (# of TS Features) | Seq_Length | Download |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Walmart-TS| 1.3M | 4 | 6 | 1 | 143 |[model](https://github.com/betterdataai/time-series-synthetic/blob/main/saved_models/stage2-Walmart.ckpt)|
 
 
 
