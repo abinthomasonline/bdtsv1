@@ -51,9 +51,9 @@ Please refer to this [repo](https://github.com/betterdataai/data/tree/new) for d
 
 ## Pre-trained Models
 
-| Model | #Params | Num_Static_Cond| Static_Cond_Dim | Num_TS_Channel (# of TS Features) | Seq_Length | Download |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| Walmart-TS| 1.3M | 4 | 6 | 1 | 143 |[model](https://github.com/betterdataai/time-series-synthetic/blob/main/saved_models/stage2-Walmart.ckpt)|
+| Model | Config | #Params | Num_Static_Cond| Static_Cond_Dim | Num_TS_Channel (# of TS Features) | Seq_Length | Download |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| Walmart-TS| [config](https://github.com/betterdataai/time-series-synthetic/blob/main/configs/config.yaml) | 1.3M | 4 | 6 | 1 | 143 |[model](https://github.com/betterdataai/time-series-synthetic/blob/main/saved_models/stage2-Walmart.ckpt)|
 
 
 
