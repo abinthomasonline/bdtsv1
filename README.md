@@ -31,6 +31,16 @@ As of 12/22/2024, the conditional TS model only supports .csv file as the input 
 Num_Col = Num_Static_Cond (after trasformation using Betterdata data pipeline) + Num_TS_Channel
 ```
 ### Walmart Dataset Example:
+#### Orignial static conditions:
+<img width="581" alt="image" src="https://github.com/user-attachments/assets/1200f382-1db1-4c1c-b48e-5b25e719af49" />
+#### Static conditions after transformation:
+<img width="927" alt="image" src="https://github.com/user-attachments/assets/2e36f2c2-b4dc-4987-b5f2-ad60725a4cf5" />
+#### Traning data should look like:
+<img width="1075" alt="image" src="https://github.com/user-attachments/assets/81d572c3-bec6-47c8-8ae9-080e284792d9" />
+
+
+
+
 
 
 ## Pre-trained Models
