@@ -90,7 +90,7 @@ python generation.py --use_custom_dataset True --dataset_names Walmart --train_d
 ```
 
 ## Evaluation
-As of 12/22/2024, this repo only supports simply evaluation of distribution comparion of real and synthetic data. You can find the code [here](https://github.com/betterdataai/time-series-synthetic/blob/main/Evaluate.ipynb).
+As of 12/22/2024, this repo only supports simple evaluation of distribution comparion of real and synthetic data. You can find the code [here](https://github.com/betterdataai/time-series-synthetic/blob/main/Evaluate.ipynb).
 
 ### Result of Walmart Dataset:
 ![Weekly_Sales](https://github.com/user-attachments/assets/41a11be5-ca50-4ea4-a491-5d5d9251d854)
