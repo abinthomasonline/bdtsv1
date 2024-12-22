@@ -3,7 +3,7 @@
 
 ## Contents
 - [Install](#install)
-- [Dataset](#dataset)
+- [Dataset](#dataset-preperation)
 - [Models](#pre-trained-models)
 - [Training](#training)
 - [Generation](#generation)
@@ -25,11 +25,15 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-## Dataset
+## Dataset Preperation
+As of 12/22/2024, the conditional TS model only supports .csv file as the input data. All dataset should be in ".csv" form and follow the format below:
+Num_Col = Num_Static_Cond (after trasformation using Betterdata data pipeline) + Num_TS_Channel
+Walmart Dataset Example:
+
 
 ## Pre-trained Models
 
-| Model | #Params | Num_Static_Conditions| Static_Cond_Dim | Num_TS_Channel (# of TS Features) | Seq_Length | Download |
+| Model | #Params | Num_Static_Cond| Static_Cond_Dim | Num_TS_Channel (# of TS Features) | Seq_Length | Download |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | Walmart-TS| 1.3M | 4 | 6 | 1 | 143 |[model](https://github.com/betterdataai/time-series-synthetic/blob/main/saved_models/stage2-Walmart.ckpt)|
 
