@@ -57,10 +57,14 @@ Num_Col = Num_Static_Cond (after trasformation using Betterdata data pipeline) +
 
 
 ## Training
-The training consists two stages. Stage1 is to train a VQVAE for discrete tokenization and Stage2 is to train a transformer model for TS generation.
+The training consists two stages. Stage1 is to train a VQVAE for discrete tokenization and Stage2 is to train a transformer model for TS generation. Args you need to pass: train_data_path, test_data_path, static_cond_dim, seq_len.
+
+```
+staic_cond_dim = nums of columns of static conditions after data transformation using Betterdata data pipeline
+seq_len = num of time step in one time-series sample. E.g., sample period = 24hrs and sample interval = 1hr, then seq_len = 24
+```
 
 ### Stage1
-Args you need to pass: train_data_path, test_data_path, static_cond_dim, seq_len
 
 ```
 python stage1.py --use_custom_dataset True --dataset_names Walmart --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv --static_cond_dim 6 --seq_len 143 --gpu_device_ind 0
