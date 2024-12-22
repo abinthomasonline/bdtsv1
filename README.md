@@ -86,7 +86,7 @@ python stage2.py --use_custom_dataset True --dataset_names Walmart --train_data_
 
 ## Generation
 ```
-python generation.py --use_custom_dataset True --dataset_names Walmart --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv --static_cond_dim 6 --seq_len 143 --gpu_device_idx 0
+python generate.py --use_custom_dataset True --dataset_names Walmart --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv --static_cond_dim 6 --seq_len 143 --gpu_device_idx 0
 ```
 
 ## Evaluation
