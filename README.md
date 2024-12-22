@@ -31,7 +31,7 @@ pip install -r requirements.txt
 
 | Model | #Params | Num_Static_Conditions| Static_Cond_Dim | Num_TS_Channel (# of TS Features) | Download |
 |:---:|:---:|:---:|:---:|:---:|:---:|
-| Walmart-TS| 1.3M | 4 | 6 | 1 | |
+| Walmart-TS| 1.3M | 4 | 6 | 1 |[model](https://github.com/betterdataai/time-series-synthetic/blob/main/saved_models/stage2-Walmart.ckpt)|
 
 
 
