@@ -30,7 +30,7 @@ As of 12/22/2024, the conditional TS model only supports .csv file as the input 
 ```
 Num_Col = Num_Static_Cond (after trasformation using Betterdata data pipeline) + Num_TS_Channel
 ```
-Please refer to this [repo](https://github.com/betterdataai/data/tree/new) for details of Betterdata data pipeline. You can find the example code of data pipeline for the Walmart Dataset [here](https://github.com/betterdataai/time-series-synthetic/blob/main/Data%20Pipeline.ipynb).
+Please refer to this [repo](https://github.com/betterdataai/data/tree/new) for details of Betterdata data pipeline. You can find the example code of data preprocessing for the Walmart Dataset [here](https://github.com/betterdataai/time-series-synthetic/blob/main/Data%20Pipeline.ipynb).
 
 
 
