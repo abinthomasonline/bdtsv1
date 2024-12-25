@@ -1,0 +1,100 @@
+{
+  "dataset": {
+    "data_scaling": true,
+    "batch_sizes": {
+      "stage1": 32,
+      "stage2": 16,
+      "stage_fid_enhancer": 16
+    },
+    "num_workers": 0
+  },
+  "exp_params": {
+    "lr": 0.001,
+    "linear_warmup_rate": 0.1
+  },
+  "trainer_params": {
+    "max_steps": {
+      "stage1": 50000,
+      "stage2": 200000,
+      "stage_fid_enhancer": 50000
+    },
+    "val_check_interval": {
+      "stage1": 5000,
+      "stage2": 10000,
+      "stage_fid_enhancer": 2500
+    }
+  },
+  "encoder": {
+    "init_dim": 4,
+    "hid_dim": 128,
+    "n_resnet_blocks": 2,
+    "downsampled_width": {
+      "lf": 8,
+      "hf": 32
+    }
+  },
+  "decoder": {
+    "n_resnet_blocks": 2
+  },
+  "VQ-VAE": {
+    "n_fft": 4,
+    "codebook_sizes": {
+      "lf": 32,
+      "hf": 32
+    }
+  },
+  "MaskGIT": {
+    "choice_temperatures": {
+      "lf": 10,
+      "hf": 4
+    },
+    "T": {
+      "lf": 10,
+      "hf": 1
+    },
+    "prior_model_l": {
+      "hidden_dim": 128,
+      "n_layers": 4,
+      "heads": 2,
+      "ff_mult": 1,
+      "use_rmsnorm": true,
+      "p_unconditional": 0.2,
+      "model_dropout": 0.3,
+      "emb_dropout": 0.3
+    },
+    "prior_model_h": {
+      "hidden_dim": 32,
+      "n_layers": 1,
+      "heads": 1,
+      "ff_mult": 1,
+      "use_rmsnorm": true,
+      "p_unconditional": 0.2,
+      "model_dropout": 0.3,
+      "emb_dropout": 0.3
+    },
+    "cfg_scale": 1
+  },
+  "fidelity_enhancer": {
+    "dim": 8,
+    "dim_mults": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "resnet_block_groups": 4,
+    "dropout": 0.5,
+    "tau_search_rng": [
+      0.1,
+      0.5,
+      1,
+      2,
+      4
+    ],
+    "percept_loss_weight": 0
+  },
+  "evaluation": {
+    "batch_size": 32,
+    "min_num_gen_samples": 1024
+  }
+}
