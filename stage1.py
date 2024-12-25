@@ -6,6 +6,7 @@ run `python stage1.py`
 import os
 from argparse import ArgumentParser
 import copy
+import json
 
 import torch
 import wandb
@@ -91,7 +92,10 @@ def train_stage1(config: dict,
 if __name__ == '__main__':
     # load config
     args = load_args()
-    config = load_yaml_param_settings(args.config)
+    if args.config.endswith('.json'):
+        config = json.load(open(args.config))
+    else:
+        config = load_yaml_param_settings(args.config)
     dataset_name = args.dataset_names[0]
     batch_size = config['dataset']['batch_sizes']['stage1']
     dataset_importer = DatasetImporterCustom(train_data_path=args.train_data_path,
@@ -100,15 +104,4 @@ if __name__ == '__main__':
     train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['train', 'test']]
     train_stage1(config, dataset_name, train_data_loader, test_data_loader, args.gpu_device_ind)
 
-    # for dataset_name in args.dataset_names:
-    #     # data pipeline
-    #     batch_size = config['dataset']['batch_sizes']['stage1']
-    #     if not args.use_custom_dataset:
-    #         dataset_importer = DatasetImporterUCR(dataset_name, **config['dataset'])
-    #         train_data_loader, test_data_loader = [build_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['train', 'test']]
-    #     else:
-    #         dataset_importer = DatasetImporterCustom(**config['dataset'])
-    #         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['train', 'test']]
-    #
-    #     # train
-    #     train_stage1(config, dataset_name, train_data_loader, test_data_loader, args.gpu_device_ind)
+

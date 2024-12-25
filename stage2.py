@@ -7,6 +7,7 @@ import os
 import copy
 from argparse import ArgumentParser
 import argparse
+import json
 
 import torch
 import wandb
@@ -89,33 +90,6 @@ def train_stage2(config: dict,
         os.mkdir(get_root_dir().joinpath('saved_models'))
     trainer.save_checkpoint(os.path.join(f'saved_models', f'stage2-{dataset_name}.ckpt'))
 
-    # # test
-    # print('evaluating...')
-    # eval_device = device[0] if accelerator == 'gpu' else 'cpu'
-    # evaluation = Evaluation(dataset_name, in_channels, input_length, n_classes, eval_device, config,
-    #                         use_fidelity_enhancer=False,
-    #                         feature_extractor_type=feature_extractor_type,
-    #                         use_custom_dataset=use_custom_dataset).to(eval_device)
-    # min_num_gen_samples = config['evaluation']['min_num_gen_samples']  # large enough to capture the distribution
-    # (_, _, x_gen), _ = evaluation.sample(max(evaluation.X_test.shape[0], min_num_gen_samples), 'unconditional')
-    # # z_train = evaluation.z_train
-    # z_test = evaluation.z_test
-    # z_gen = evaluation.compute_z_gen(x_gen)
-    #
-    # # fid_train = evaluation.fid_score(z_test, z_gen)
-    # wandb.log({'FID': evaluation.fid_score(z_test, z_gen)})
-    # if not use_custom_dataset:
-    #     IS_mean, IS_std = evaluation.inception_score(x_gen)
-    #     wandb.log({'IS_mean': IS_mean, 'IS_std': IS_std})
-
-
-    # # evaluation.log_visual_inspection(evaluation.X_train, x_gen, 'X_train vs X_gen')
-    # evaluation.log_visual_inspection(evaluation.X_test, x_gen, 'X_test vs Xhat')
-    # # evaluation.log_visual_inspection(evaluation.X_train, evaluation.X_test, 'X_train vs X_test')
-    #
-    # # evaluation.log_pca([z_train, z_gen], ['z_train', 'z_gen'])
-    # evaluation.log_pca([z_test, z_gen], ['Z_test', 'Zhat'])
-    # # evaluation.log_pca([z_train, z_test], ['z_train', 'z_test'])
 
     wandb.finish()
 
@@ -123,7 +97,10 @@ def train_stage2(config: dict,
 if __name__ == '__main__':
     # load config
     args = load_args()
-    config = load_yaml_param_settings(args.config)
+    if args.config.endswith('.json'):
+        config = json.load(open(args.config))
+    else:
+        config = load_yaml_param_settings(args.config)
 
     # config
     dataset_name = args.dataset_names[0]
@@ -132,16 +109,3 @@ if __name__ == '__main__':
     train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['train', 'test']]
     train_stage2(config, dataset_name, args.static_cond_dim, train_data_loader, test_data_loader, args.gpu_device_ind, args.feature_extractor_type, args.use_custom_dataset)
 
-    # # run
-    # for dataset_name in dataset_names:
-    #     # data pipeline
-    #     batch_size = config['dataset']['batch_sizes']['stage2']
-    #     if not args.use_custom_dataset:
-    #         dataset_importer = DatasetImporterUCR(dataset_name, **config['dataset'])
-    #         train_data_loader, test_data_loader = [build_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['train', 'test']]
-    #     else:
-    #         dataset_importer = DatasetImporterCustom(**config['dataset'])
-    #         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['train', 'test']]
-    #
-    #     # train
-    #     train_stage2(config, dataset_name, train_data_loader, test_data_loader, args.gpu_device_ind, args.feature_extractor_type, args.use_custom_dataset)

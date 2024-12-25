@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader
 from preprocessing.data_pipeline import build_custom_data_pipeline
 from preprocessing.preprocess import DatasetImporterCustom
 import pandas as pd
+import json
 
 from evaluation.evaluation import Evaluation
 from utils import get_root_dir, load_yaml_param_settings, str2bool
@@ -64,14 +65,13 @@ def evaluate(config: dict,
     wandb.init(project='TimeVQVAE-evaluation', 
                config={**config, 'dataset_name': dataset_name, 'static_cond_dim': static_cond_dim, 'use_fidelity_enhancer':use_fidelity_enhancer, 'feature_extractor_type':feature_extractor_type})
 
-    # unconditional sampling
-    print('evaluating...')
+    # conditional sampling
+    # print('evaluating...')
     evaluation = Evaluation(dataset_name, static_cond_dim, dataset_importer, in_channels, input_length, gpu_device_idx, config,
                             use_fidelity_enhancer=use_fidelity_enhancer,
                             feature_extractor_type=feature_extractor_type,
                             use_custom_dataset=use_custom_dataset).to(gpu_device_idx)
     min_num_gen_samples = config['evaluation']['min_num_gen_samples']  # large enough to capture the distribution
-    # Need to add sample function for static conditional sampling
     (_, _, xhat), xhat_R = evaluation.sample(min(static_conditions.shape[0],min_num_gen_samples), static_conditions)
     x_new = np.transpose(xhat, (0, 2, 1))
     if not os.path.isdir(get_root_dir().joinpath('synthetic_data')):
@@ -91,7 +91,10 @@ def evaluate(config: dict,
 if __name__ == '__main__':
     # load config
     args = load_args()
-    config = load_yaml_param_settings(args.config)
+    if args.config.endswith('.json'):
+        config = json.load(open(args.config))
+    else:
+        config = load_yaml_param_settings(args.config)
     dataset_name = args.dataset_names[0]
     batch_size = config['evaluation']['batch_size']
     dataset_importer = DatasetImporterCustom(train_data_path=args.train_data_path, test_data_path=args.test_data_path,
