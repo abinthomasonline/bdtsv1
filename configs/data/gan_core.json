@@ -1,0 +1,79 @@
+{
+  "data_format_args": {
+    "na_values": [],
+    "keep_default_na": false,
+    "encoding": "utf-8"
+  },
+  "drop_columns": [],
+  "dropna_columns": [],
+  "na_equivalences": ["-", "", "N/A", "nan", "na", "Nil", "Nil.", "#N/A", " ", "n/a", "null", "None", "-NaN",
+                            "-nan", "#NA", "#N/A N/A", "NULL", "<NA>", "NA", "NaN", "NaT"],
+  "target_columns": [],
+  "categorical_columns": [],
+  "numerical_columns": [],
+  "datetime_columns": [],
+  "timedelta_columns": [],
+  "mixed_columns": {},
+  "encoding_columns": {},
+  "non_std_columns": [],
+  "default_categorical_kwargs": {
+    "pos_label": null,
+    "strip": null,
+    "case_sensitive": true
+  },
+  "default_numerical_kwargs": {
+    "is_percentage": false,
+    "separator": null,
+    "digit_group": 3,
+    "min_val": false,
+    "max_val": false,
+    "rounding": null,
+    "smallest_chunk": 1
+  },
+  "default_datetime_kwargs": {
+    "datetime_format": null,
+    "min_val": false,
+    "max_val": false,
+    "min_significant_unit": "microsecond",
+    "smallest_chunk": 1,
+    "dayfirst": true,
+    "yearfirst": false,
+    "main_method": "numerical",
+    "auxiliary_methods": ["components_time"],
+    "additional_components": ["day_name", "month_name"],
+    "modify_by_additional_components": true
+  },
+  "default_timedelta_kwargs": {
+    "min_val": false,
+    "max_val": false,
+    "min_significant_unit": "microsecond",
+    "smallest_chunk": 1
+  },
+  "default_mixed_kwargs": {
+    "base_type": "numerical",
+    "value_mapper": {}
+  },
+  "default_encoding_kwargs": {
+    "info_data": "country",
+    "info_column_kwargs": {},
+    "strip": null,
+    "case_sensitive": true,
+    "seen_only": true,
+    "n_neighbors": 5
+  },
+  "default_non_std_kwargs": {
+    "strip": null,
+    "case_sensitive": true
+  },
+  "special_column_kwargs": {},
+  "default_binary_component_kwargs": {
+    "tensorize_method": "single"
+  },
+  "default_multiclass_component_kwargs": {
+    "tensorize_method": "one_hot"
+  },
+  "default_numerical_component_kwargs": {
+    "normalize_method": "standard",
+    "long_tail": false
+  }
+}
