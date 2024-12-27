@@ -103,7 +103,7 @@ if __name__ == '__main__':
     train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for
                                            kind in ['train', 'test']]
     static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
-    print(static_conditions.shape)
+    # print(static_conditions.shape)
     # generate synthetic data
     evaluate(config, dataset_name, args.static_cond_dim, dataset_importer, static_conditions, train_data_loader, args.gpu_device_idx,
              args.use_fidelity_enhancer, args.feature_extractor_type, args.use_custom_dataset)
