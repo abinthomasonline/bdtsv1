@@ -66,15 +66,15 @@ def prepare(args: argparse.Namespace):
     with open(args.data_policy, "r") as f:
         data_config = json.load(f)
 
-    # Subsample data samples for validation
-    df_transform = utils.dataframe_subsample(args.data_path, data_config["transformer_sample_size"])
-    del data_config["transformer_sample_size"]
+    # Load original dataset ?
+    data = args.data_path
+    df_data = pd.read_csv(data)
+
 
     # Define the proper data pipeline for your model
-    TableTransformer.validate_kwargs(df_transform, data_config, learning=True)
-    data_config["json_compatible"] = True
-    learned_args = TableTransformer.learn_args(df_transform, **data_config)
-    TableTransformer.validate_kwargs(df_transform, learned_args, learning=False)
+    TableTransformer.validate_kwargs(df_data, data_config, learning=True)
+    learned_args = TableTransformer.learn_args(df_data, **data_config)
+    TableTransformer.validate_kwargs(df_data, learned_args, learning=False)
 
     directory = os.path.dirname(args.output_path)
     # Check if the directory exists
@@ -87,15 +87,16 @@ def prepare(args: argparse.Namespace):
 
 
 def validate(args: argparse.Namespace):
-    df_transform = utils.dataframe_subsample(args.data_path, args.sample_size)
+    data = args.data_path
+    df_data = pd.read_csv(data)
     with open(args.data_config, "r") as f:
         data_config = json.load(f)
 
-    TableTransformer.validate_kwargs(df_transform, data_config, learning=False)
+    TableTransformer.validate_kwargs(df_data, data_config, learning=False)
 
 
 def train(args: argparse.Namespace):
-    # Stage 1 training
+    # load training configs
     with open(args.model_config, "r") as f:
         config = json.load(f)
     dataset_name = config['dataset']['dataset_name']
@@ -108,6 +109,7 @@ def train(args: argparse.Namespace):
                                              seq_len=seq_len, **config['dataset'])
     train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for
                                            kind in ['train', 'test']]
+    # Stage 1 training
     train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
 
     # Stage 2 training
