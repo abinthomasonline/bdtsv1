@@ -98,12 +98,14 @@ def validate(args: argparse.Namespace):
 def train(args: argparse.Namespace):
     # load training configs
     with open(args.model_config, "r") as f:
-        config = json.load(f)
+        model_config = json.load(f)
+    config = {}
+    for d in (model_config['general'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
     dataset_name = config['dataset']['dataset_name']
     batch_size = config['dataset']['batch_sizes']['stage1']
     static_cond_dim = config['dataset']['static_cond_dim']
     seq_len = config['dataset']['seq_len']
-    gpu_device_ind = config['gpu']['gpu_device_id']
+    gpu_device_ind = config['gpu_device_id']
     dataset_importer = DatasetImporterCustom(train_data_path=args.data_path,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
@@ -119,13 +121,15 @@ def train(args: argparse.Namespace):
 
 def generate(args: argparse.Namespace):
     with open(args.model_config, "r") as f:
-        config = json.load(f)
+        model_config = json.load(f)
 
+    config = {}
+    for d in (model_config['general'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
     dataset_name = config['dataset']['dataset_name']
-    batch_size = config['dataset']['batch_sizes']['stage1']
+    batch_size = config['evaluation']['batch_size']
     static_cond_dim = config['dataset']['static_cond_dim']
     seq_len = config['dataset']['seq_len']
-    gpu_device_ind = config['gpu']['gpu_device_id']
+    gpu_device_ind = config['gpu_device_id']
     dataset_importer = DatasetImporterCustom(train_data_path=args.data_path,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])

@@ -9,8 +9,7 @@ dataset:
     stage_fid_enhancer: 16
   num_workers: 0
 
-gpu:
-  gpu_device_id: 0
+gpu_device_id: 0
 
 exp_params:
   lr: 0.001

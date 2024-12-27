@@ -1,0 +1,11 @@
+einops
+numpy
+matplotlib
+scikit-learn
+wandb
+pandas
+supervised-fcn-2
+numba
+x-transformers==1.31.6
+torch==2.2.1
+pytorch-lightning==2.3.1
