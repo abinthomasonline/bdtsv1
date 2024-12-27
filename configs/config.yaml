@@ -1,10 +1,16 @@
 dataset:
   data_scaling: True
+  dataset_name: "customized"
+  static_cond_dim: 6
+  seq_len: 143
   batch_sizes:
     stage1: 32
     stage2: 16
     stage_fid_enhancer: 16
   num_workers: 0
+
+gpu:
+  gpu_device_id: 0
 
 exp_params:
   lr: 0.001
