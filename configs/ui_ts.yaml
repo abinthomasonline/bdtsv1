@@ -4795,241 +4795,98 @@ model:
     - decoder
     - VQ-VAE
     - MaskGIT
+    - fidelity_enhancer
   tags:
     - High Impact
-  label: TS Training Args
-  groupTag: TS Training Parameters
+  label: TS Model Args
+  groupTag: TS Model Parameters
 
 encoder:
   type: skipped
-  fields:
-    - init_dim
-    - hid_dim
-    - n_resnet_blocks
-    - downsampled_width
-  tags:
-    - High Impact
-  label: Encoder Parameters
-  groupTag: TS Training Parameters
 
-init_dim:
-   type: skipped
-   decimal: false
-   min: 4
-   max: 128 #~suggested
-   initialValue: 4
-   label: initial dimension of VQ-VAE encoder
-   tags:
-     - High Impact
-   groupTag: TS Training Parameters
-   documentation: |
-     initial dimension of VQ-VAE encoder.
-
-hid_dim:
-   type: skipped
-   decimal: false
-   min: 128
-   max: 4096 #~suggested
-   initialValue: 128
-   label: hidden dimension of VQ-VAE encoder
-   tags:
-     - High Impact
-   groupTag: TS Training Parameters
-   documentation: |
-     hidden dimension of VQ-VAE encoder.
-
-n_resnet_blocks:
-   type: skipped
-   decimal: false
-   min: 2
-   max: 32 #~suggested
-   initialValue: 2
-   label: num of resnet blocks in VQ-VAE encoder
-   tags:
-     - High Impact
-   groupTag: TS Training Parameters
-   documentation: |
-     number of resnet blocks in VQ-VAE encoder.
-
-downsampled_width:
-  lf:
+decoder:
   type: skipped
 
-  tags:
-    - High Impact
-  label: downsampled width in VQ-VAE encoder
-  groupTag: TS Training Parameters
-  documentation: |
-    downsampled width in VQ-VAE encoder.
+VQ-VAE:
+  type: skipped
 
+MaskGIT:
+  type: skipped
 
+fidelity_enhancer:
+  type: skipped
 
 
 train:
   type: object
   fields:
-    - n_parallel_fit_transformer
-    - n_parallel_density_estimation
-    - threshold_rows
+    - exp_params
+    - trainer_params
   tags:
     - High Impact
-  label: PDE Training Args
-  groupTag: PDE Training Parameters
+  label: TS Training Args
+  groupTag: TS Training Parameters
+
+exp_params:
+  type: object
+  fields:
+    - lr
+    - linear_warmup_rate
+  tags:
+    - High Impact
+  label: TS Training Args
+  groupTag: TS Training Parameters
+
+lr:
+  type: number
+  decimal: true
+  min: 0
+  max: 1 #~suggested
+  initialValue: 0.001
+  label: learning rate
+  tags:
+    - High Impact
+  groupTag: TS Training Parameters
+  documentation: |
+    learing rate.
+
+linear_warmup_rate:
+  type: skipped
+
+trainer_params:
+  type: object
+  fields:
+    - max_steps
+    - val_check_interval
+  tags:
+    - High Impact
+  label: TS Training Args
+  groupTag: TS Training Parameters
+
+
+val_check_interval:
+  type: skipped
 
 generate:
   type: object
   fields:
-    - num_rows
-    - sample_batch_size
-    - n_parallel_generation
+    - evaluation
   tags:
     - High Impact
-  label: PDE Training Args
-  groupTag: PDE Generation Parameters
+  label: TS Generation Args
+  groupTag: TS Generation Parameters
 
-n_training_workers:
+evaluation:
   type: skipped
-  decimal: false
-  min: -1
-  max: 1000000 #~suggested
-  initialValue: -1
-  label: number of current workers during model training
-  tags:
-    - High Impact
-  groupTag: PDE Training Parameters
-  documentation: |
-    number of current workers during model training.
 
-num_trees:
-  type: skipped
-  decimal: false
-  min: 1
-  max: 1000000 #~suggested
-  initialValue: 30
-  label: number of tree
-  tags:
-    - High Impact
-  groupTag: PDE Training Parameters
-  documentation: |
-    Number of tree used in the random forest model. Random forest is the base model for probability density estimation method.
-min_node_size:
-  type: skipped
-  decimal: false
-  min: 1
-  max: 1000000 #~suggested
-  initialValue: 5
-  label: number of tree
-  tags:
-    - High Impact
-  groupTag: PDE Training Parameters
-  documentation: |
-    Number of tree used in the random forest model. Random forest is the base model for probability density estimation method.
-max_iters:
-  type: number
-  decimal: false
-  min: 1
-  max: 10 #~suggested
-  initialValue: 1
-  label: number of maximal training epochs
-  tags:
-    - High Impact
-  groupTag: PDE Training Parameters
-  documentation: |
-    Maximum training epochs for PDE since early stop is applied by default. The recommended value should not exceed 10.
-    For data more than 1 million rows, 1 epoch is recommanded.
-delta:
-  type: skipped
-  initialValue: 0
-  decimal: true
-  min: 0
-  max: 0.5
-  label: PDE delta
-  tags:
-    - Low Impact
-  groupTag: PDE Training Parameters
-early_stop:
-  type: skipped
-  initialValue: true
-  label: PDE delta
-  tags:
-    - Low Impact
-  groupTag: PDE Training Parameters
-n_parallel_fit_transformer:
-  type: number
-  decimal: false
-  min: 1
-  max: 1000000 #~suggested
-  initialValue: 4
-  label: number of concurrent data transformer workers
-  tags:
-    - High Impact
-  groupTag: PDE Training Parameters
-  documentation: |
-    Number of multi-processes to fit data transformer.
-    This operation is also constrained by memory, too many concurrent processes can cause out-of-memory issue.
-n_parallel_density_estimation:
-  type: number
-  decimal: false
-  min: -1
-  max: 1000000 #~suggested
-  initialValue: 4
-  label: number of concurrent density estimation workers
-  tags:
-    - High Impact
-  groupTag: PDE Training Parameters
-  documentation: |
-    Number of multi-processes to estimate probability density. -1 means using all the available processors.
-    This operation is also constrained by memory, too many concurrent processes can cause out-of-memory issue.
-threshold_rows:
-  type: skipped
-  decimal: false
-  min: 100
-  max: 1000000 #~suggested
-  initialValue: 1000000
-  label: threshold
-  tags:
-    - High Impact
-  groupTag: PDE Training Parameters
-  documentation: |
-    Threshold to cut training data into several chunks.
-sample_batch_size:
-  type: number
-  decimal: false
-  min: 1
-  max: 5000000 #~suggested
-  initialValue: 1000000
-  label: bath size
-  tags:
-    - High Impact
-  groupTag: PDE Generation Parameters
-  documentation: |
-    Batch size during data generation. The default value is big because for normal dataset (e.g., number of rows < 1M, number of columns < 150), we do not need to put generation in batch.
-    When number of columns of original data is big, a large batch size can cause out-of-memory issue. If generation failed, try generation again with a lower batch size.
-num_rows:
-  type: number
-  decimal: false
-  min: 1
-  max: 100000000 #~suggested
-  initialValue: 2000
-  label: generation size
-  tags:
-    - High Impact
-  groupTag: PDE Generation Parameters
-  documentation: |
-    Number of rows of generation.
-n_parallel_generation:
-  type: number
-  decimal: false
-  min: -1
-  max: 1000000 #~suggested
-  initialValue: 4
-  label: number of concurrent generation workers
-  tags:
-    - High Impact
-  groupTag: PDE Generation Parameters
-  documentation: |
-    Number of multi-processes to sample data. -1 means using all the available processors.
-    This operation is also constrained by memory, too many concurrent process can cause out-of-memory issue.
+
+
+TS Model Parameters:
+  type: group-tag
+  documentation: TS model parameters
+TS General Parameters:
+  type: group-tag
+  documentation: TS general parmeters
 TS Training Parameters:
   type: group-tag
   documentation: TS training parameters
