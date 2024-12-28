@@ -29,20 +29,20 @@ endif
 
 train_ts:
 	@mkdir -p $(OUTPUT_PATH)
+	@mkdir -p $(MODEL_OUTPUT_PATH)
 	@python3 main.py -t -l $(LOG_LEVEL) train \
       -d $(DATA_PATH) -v $(VAL_DATA_PATH) -m $(MODEL_CONFIG_PATH)
 
 wrapup_model:
-    @mkdir -p $(MODEL_OUTPUT_PATH)
 	@mv ./saved_models/* $(MODEL_OUTPUT_PATH)
 	@echo "Training Completed"
 
 sample_ts:
+	@mkdir -p $(GEN_DATA_OUTPUT_PATH)
 	@python3 main.py -t -l $(LOG_LEVEL) sample \
       -d $(DATA_PATH) -sd $(STATIC_COND_PATH) -m $(MODEL_CONFIG_PATH)
 
 wrapup_data:
-    @mkdir -p $(GEN_DATA_OUTPUT_PATH)
-    @mv ./synthetic_data/* $(GEN_DATA_OUTPUT_PATH)
-    @echo "Sampling Completed"
+	@mv ./synthetic_data/* $(GEN_DATA_OUTPUT_PATH)
+	@echo "Sampling Completed"
 
