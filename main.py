@@ -42,23 +42,19 @@ def prepare_args() -> argparse.Namespace:
                                  default="./out/ts_data_config_learn.json")
     validate_parser.add_argument("--output-path", "-o", default="./out/ts_data_config_learn.json")
 
+    # Define the args related to model training
     train_parser = subparsers.add_parser("train")
     train_parser.add_argument("--data-path", "-d", required=True)
-    train_parser.add_argument("--test-data-path", "-t", required=True)
-    train_parser.add_argument("--data-config", "-c", type=str,
-                              default="./out/ts_data_config_learn.json")
+    train_parser.add_argument("--test-data-path", "-v", required=True)
     train_parser.add_argument("--model-config", "-m", type=str,
-                              default="./configs/config.json")
-    train_parser.add_argument("--model-saving-path", "-s", type=str,
-                              default="./out/ts_model_config.json")
-    train_parser.add_argument("--output-path", "-o", default="./out")
+                              default="./configs/model/config.json")
 
+    # Define the args related to synthetic data generation (sampling)
     sample_parser = subparsers.add_parser("sample")
-    sample_parser.add_argument("--model-loading-path", "-l", type=str,
-                               default="./out/ts_model_config.json")
+    sample_parser.add_argument("--data-path", "-d", required=True)
+    sample_parser.add_argument("--static-cond-path", "-sd", required=True)
     sample_parser.add_argument("--model-config", "-m", type=str,
-                               default="./configs/config.json")
-    sample_parser.add_argument("--output-path", "-o", default="./synthetic_data/generated.csv")
+                               default="./configs/model/config.json")
     return parser.parse_args()
 
 
@@ -131,7 +127,7 @@ def generate(args: argparse.Namespace):
     seq_len = config['dataset']['seq_len']
     gpu_device_ind = config['gpu_device_id']
     dataset_importer = DatasetImporterCustom(train_data_path=args.data_path,
-                                             test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
+                                             test_data_path=args.static_cond_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
     train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for
                                            kind in ['train', 'test']]
