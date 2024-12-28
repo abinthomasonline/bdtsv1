@@ -58,9 +58,9 @@ class Evaluation(nn.Module):
         self.feature_extractor_type = feature_extractor_type
         assert feature_extractor_type in ['supervised_fcn', 'rocket'], 'unavailable feature extractor type.'
 
-        if not use_custom_dataset:
-            self.fcn = load_pretrained_FCN(dataset_name).to(device)
-            self.fcn.eval()
+        # if not use_custom_dataset:
+        #     self.fcn = load_pretrained_FCN(dataset_name).to(device)
+        #     self.fcn.eval()
         if feature_extractor_type == 'rocket':
             self.rocket_kernels = generate_kernels(input_length, num_kernels=rocket_num_kernels)
 
