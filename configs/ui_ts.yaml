@@ -4848,6 +4848,8 @@ train:
   type: object
   label: Training
   fields:
+    - gpu_device_id
+    - seq_len
     - exp_params
     - trainer_params
 
@@ -4859,6 +4861,16 @@ exp_params:
 lr#maskgit-lr:
   type: number
   label: Learning rate
+
+gpu_device_id:
+  type: number
+  label: GPU idx
+  min: 0
+
+seq_len:
+  type: number
+  label: Length of one time-series data
+  min: 1
 
 trainer_params:
   type: object
@@ -4883,7 +4895,7 @@ stage2:
 generate:
   type: skipped
 
-train_data:
+data:
   type: object
   label: Training hyper-parameters
   fields:
@@ -4891,19 +4903,15 @@ train_data:
 
 dataset:
   type: object
-  label: Training hyper-parameters
+  label: Dataset
   fields:
-    - seq_len
     - batch_sizes
 
-seq_len:
-  type: number
-  label: Length of one time-series data
-  min: 1
+
 
 batch_sizes:
   type: object
-  label: Training hyper-parameters
+  label: Training batch sizes
   fields:
     - stage1#batch-size
     - stage2#batch-size

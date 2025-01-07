@@ -71,6 +71,9 @@
     }
   },
   "train": {
+    "gpu_device_id": 0,
+    "static_cond_dim": 6,
+    "seq_len": 143,
     "exp_params": {
       "lr": 0.001,
       "linear_warmup_rate": 0.1
@@ -91,19 +94,16 @@
   "generate": {
     "evaluation": {"batch_size": 32}
     },
-  "train_data": {
+  "data": {
     "dataset": {
       "data_scaling": true,
       "dataset_name": "customized",
-      "static_cond_dim": 6,
-      "seq_len": 143,
       "batch_sizes": {
         "stage1": 32,
         "stage2": 16,
         "stage_fid_enhancer": 16
       },
       "num_workers": 0
-    },
-    "gpu_device_id": 0
+    }
   }
 }
