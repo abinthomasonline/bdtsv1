@@ -24,6 +24,8 @@ from evaluation.evaluation import Evaluation
 from utils import get_root_dir, load_yaml_param_settings, str2bool
 
 
+os.environ['WANDB_MODE'] = 'disabled'
+
 def load_args():
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, help="Path to the config data  file.",
@@ -103,9 +105,16 @@ if __name__ == '__main__':
         config = load_yaml_param_settings(args.config)
 
     # config
-    dataset_name = args.dataset_names[0]
+    dataset_name = config['dataset']['dataset_name']
     batch_size = config['dataset']['batch_sizes']['stage2']
-    dataset_importer = DatasetImporterCustom(train_data_path = args.train_data_path, test_data_path = args.test_data_path, static_cond_dim =args.static_cond_dim , seq_len = args.seq_len, **config['dataset'])
-    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['train', 'test']]
-    train_stage2(config, dataset_name, args.static_cond_dim, train_data_loader, test_data_loader, args.gpu_device_ind, args.feature_extractor_type, args.use_custom_dataset)
-
+    static_cond_dim = config['static_cond_dim']
+    seq_len = config['seq_len']
+    gpu_device_ind = config['gpu_device_id']
+    dataset_importer = DatasetImporterCustom(train_data_path=args.train_data_path,
+                                             test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
+                                             seq_len=seq_len, **config['dataset'])
+    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
+                                           for
+                                           kind in ['train', 'test']]
+    train_stage2(config, dataset_name, static_cond_dim, train_data_loader, test_data_loader, gpu_device_ind,
+                 feature_extractor_type='rocket', use_custom_dataset=True)

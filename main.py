@@ -109,21 +109,27 @@ def train(args: argparse.Namespace):
     with open(args.model_config, "r") as f:
         model_config = json.load(f)
     config = {}
-    for d in (model_config['train_data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+    for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
     dataset_name = config['dataset']['dataset_name']
-    batch_size = config['dataset']['batch_sizes']['stage1']
-    static_cond_dim = config['dataset']['static_cond_dim']
-    seq_len = config['dataset']['seq_len']
+    batch_size_stage1 = config['dataset']['batch_sizes']['stage1']
+    batch_size_stage2 = config['dataset']['batch_sizes']['stage2']
+    static_cond_dim = config['static_cond_dim']
+    seq_len = config['seq_len']
     gpu_device_ind = config['gpu_device_id']
     dataset_importer = DatasetImporterCustom(train_data_path=args.data_path,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
-    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for
-                                           kind in ['train', 'test']]
+
     # Stage 1 training
+    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size_stage1, dataset_importer, config, kind)
+                                           for
+                                           kind in ['train', 'test']]
     train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
 
     # Stage 2 training
+    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size_stage2, dataset_importer, config, kind)
+                                           for
+                                           kind in ['train', 'test']]
     train_stage2(config, dataset_name, static_cond_dim, train_data_loader, test_data_loader, gpu_device_ind,
                  feature_extractor_type='rocket', use_custom_dataset=True)
 
@@ -136,8 +142,8 @@ def generate(args: argparse.Namespace):
     for d in (model_config['general'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
     dataset_name = config['dataset']['dataset_name']
     batch_size = config['evaluation']['batch_size']
-    static_cond_dim = config['dataset']['static_cond_dim']
-    seq_len = config['dataset']['seq_len']
+    static_cond_dim = config['static_cond_dim']
+    seq_len = config['seq_len']
     gpu_device_ind = config['gpu_device_id']
     dataset_importer = DatasetImporterCustom(train_data_path=args.data_path,
                                              test_data_path=args.static_cond_path, static_cond_dim=static_cond_dim,
