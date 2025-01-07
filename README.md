@@ -71,14 +71,14 @@ seq_len = num of time steps in one time-series sample. E.g., sample period = 24h
 ### Stage1
 
 ```
-python stage1.py --use_custom_dataset True --dataset_names Walmart --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv --static_cond_dim 6 --seq_len 143 --gpu_device_ind 0
+python stage1.py --config configs/config.yaml --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv
 ```
 
 
 ### Stage2
 
 ```
-python stage2.py --use_custom_dataset True --dataset_names Walmart --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv --static_cond_dim 6 --seq_len 143 --gpu_device_ind 0
+python stage2.py --config configs/config.yaml --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv
 ```
 
 
@@ -86,7 +86,7 @@ python stage2.py --use_custom_dataset True --dataset_names Walmart --train_data_
 
 ## Generation
 ```
-python generate.py --use_custom_dataset True --dataset_names Walmart --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv --static_cond_dim 6 --seq_len 143 --gpu_device_idx 0
+python generate.py --config configs/config.yaml --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv
 ```
 
 ## Evaluation
