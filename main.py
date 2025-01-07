@@ -42,6 +42,14 @@ def prepare_args() -> argparse.Namespace:
                                  default="./out/ts_data_config_learn.json")
     validate_parser.add_argument("--output-path", "-o", default="./out/ts_data_config_learn.json")
 
+    # Define the args for data preprocessing
+    preprocess_parser = subparsers.add_parser("preprocess")
+    preprocess_parser.add_argument("--data-path", "-d", required=True)
+    preprocess_parser.add_argument("--data-config", "-p", type=str,
+                                 default="./configs/data/gan_core.json")
+    preprocess_parser.add_argument("--output-path", "-o", default="./datasets/CustomDataset/")
+
+
     # Define the args related to model training
     train_parser = subparsers.add_parser("train")
     train_parser.add_argument("--data-path", "-d", required=True)
@@ -91,12 +99,17 @@ def validate(args: argparse.Namespace):
     TableTransformer.validate_kwargs(df_data, data_config, learning=False)
 
 
+def preprocess(args: argparse.Namespace):
+    pass
+
+
+
 def train(args: argparse.Namespace):
     # load training configs
     with open(args.model_config, "r") as f:
         model_config = json.load(f)
     config = {}
-    for d in (model_config['general'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+    for d in (model_config['train_data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
     dataset_name = config['dataset']['dataset_name']
     batch_size = config['dataset']['batch_sizes']['stage1']
     static_cond_dim = config['dataset']['static_cond_dim']
