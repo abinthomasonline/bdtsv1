@@ -4906,7 +4906,11 @@ dataset:
   label: Dataset
   fields:
     - batch_sizes
+    - dataset_name
 
+dataset_name:
+  type: text
+  label: Dataset name
 
 
 batch_sizes:
