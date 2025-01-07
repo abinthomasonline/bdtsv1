@@ -21,7 +21,7 @@ import json
 from evaluation.evaluation import Evaluation
 from utils import get_root_dir, load_yaml_param_settings, str2bool
 
-
+os.environ['WANDB_MODE'] = 'disabled'
 def load_args():
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, help="Path to the config data  file.",
