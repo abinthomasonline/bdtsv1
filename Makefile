@@ -33,7 +33,7 @@ train_ts:
 	@python3 main.py -t -l $(LOG_LEVEL) train \
       -d $(DATA_PATH) -v $(VAL_DATA_PATH) -m $(MODEL_CONFIG_PATH)
 
-wrapup_model:
+wrapup_train_ts:
 	@mv ./saved_models/* $(MODEL_OUTPUT_PATH)
 	@echo "Training Completed"
 
@@ -42,7 +42,7 @@ sample_ts:
 	@python3 main.py -t -l $(LOG_LEVEL) sample \
       -d $(DATA_PATH) -sd $(STATIC_COND_PATH) -m $(MODEL_CONFIG_PATH)
 
-wrapup_data:
+wrapup_sample_ts:
 	@mv ./synthetic_data/* $(GEN_DATA_OUTPUT_PATH)
 	@echo "Sampling Completed"
 
