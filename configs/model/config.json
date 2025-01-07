@@ -91,7 +91,7 @@
   "generate": {
     "evaluation": {"batch_size": 32}
     },
-  "general": {
+  "train_data": {
     "dataset": {
       "data_scaling": true,
       "dataset_name": "customized",

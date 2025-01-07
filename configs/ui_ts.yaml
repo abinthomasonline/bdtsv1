@@ -4787,112 +4787,136 @@ special_column_kwargs#table:
   fields: table-columns
 
 ############################################### Time Series Model Parameters ##############################################
+#model:
+#  type: object
+#  label: Model
+#  fields:
+#    - encoder
+#    - decoder
+#    - VQ-VAE
+#    - MaskGIT
+#MaskGIT:
+#  type: object
+#  label: Transformer
+#  fields:
+#    - prior_model_l
+#    - prior_model_h
+#prior_model_l:
+#  type: object
+#  label: Transformer_l
+#  fields:
+#    - hidden_dim#prior-model-low
+#    - n_layers#prior-model-low
+#    - heads#prior-model-low
+#hidden_dim#prior-model-low:
+#  type: number
+#  label: Transformer hidden dimension
+#  min: 128
+#n_layers#prior-model-low:
+#  type: number
+#  label: Number of attention blocks
+#  min: 4
+#heads#prior-model-low:
+#  type: number
+#  label: Number of heads
+#  min: 2
+#
+#prior_model_h:
+#  type: object
+#  label: Transformer_h
+#  fields:
+#    - hidden_dim#prior-model-high
+#    - n_layers#prior-model-high
+#    - heads#prior-model-high
+#hidden_dim#prior-model-high:
+#  type: number
+#  label: Transformer hidden dimension
+#  min: 32
+#n_layers#prior-model-high:
+#  type: number
+#  label: Number of attention blocks
+#  min: 1
+#heads#prior-model-high:
+#  type: number
+#  label: Number of heads
+#  min: 1
 
 model:
-  type: object
-  fields:
-    - encoder
-    - decoder
-    - VQ-VAE
-    - MaskGIT
-    - fidelity_enhancer
-  tags:
-    - High Impact
-  label: TS Model Args
-  groupTag: TS Model Parameters
-
-encoder:
   type: skipped
-
-decoder:
-  type: skipped
-
-VQ-VAE:
-  type: skipped
-
-MaskGIT:
-  type: skipped
-
-fidelity_enhancer:
-  type: skipped
-
 
 train:
   type: object
+  label: Training
   fields:
     - exp_params
     - trainer_params
-  tags:
-    - High Impact
-  label: TS Training Args
-  groupTag: TS Training Parameters
 
 exp_params:
   type: object
+  label: Training hyper-parameters
   fields:
-    - lr
-    - linear_warmup_rate
-  tags:
-    - High Impact
-  label: TS Training Args
-  groupTag: TS Training Parameters
-
-lr:
+    - lr#maskgit-lr
+lr#maskgit-lr:
   type: number
-  decimal: true
-  min: 0
-  max: 1 #~suggested
-  initialValue: 0.001
-  label: learning rate
-  tags:
-    - High Impact
-  groupTag: TS Training Parameters
-  documentation: |
-    learing rate.
-
-linear_warmup_rate:
-  type: skipped
+  label: Learning rate
 
 trainer_params:
   type: object
+  label: Training hyper-parameters
   fields:
     - max_steps
-    - val_check_interval
-  tags:
-    - High Impact
-  label: TS Training Args
-  groupTag: TS Training Parameters
-
-
-val_check_interval:
-  type: skipped
+max_steps:
+  type: object
+  label: Training steps
+  fields:
+    - stage1
+    - stage2
+stage1:
+  type: number
+  label: Discreted VAE training steps
+  min: 1
+stage2:
+  type: number
+  label: Transformer training steps
+  min: 1
 
 generate:
-  type: object
-  fields:
-    - evaluation
-  tags:
-    - High Impact
-  label: TS Generation Args
-  groupTag: TS Generation Parameters
-
-evaluation:
   type: skipped
 
+train_data:
+  type: object
+  label: Training hyper-parameters
+  fields:
+    - dataset
+
+dataset:
+  type: object
+  label: Training hyper-parameters
+  fields:
+    - seq_len
+    - batch_sizes
+
+seq_len:
+  type: number
+  label: Length of one time-series data
+  min: 1
+
+batch_sizes:
+  type: object
+  label: Training hyper-parameters
+  fields:
+    - stage1#batch-size
+    - stage2#batch-size
+stage1#batch-size:
+  type: number
+  label: Batch size (discreted VAE)
+  min: 32
+stage2#batch-size:
+  type: number
+  label: Batch size (transformer)
 
 
-TS Model Parameters:
-  type: group-tag
-  documentation: TS model parameters
-TS General Parameters:
-  type: group-tag
-  documentation: TS general parmeters
-TS Training Parameters:
-  type: group-tag
-  documentation: TS training parameters
-TS Generation Parameters:
-  type: group-tag
-  documentation: TS generation parameters
+
 
 ############################################### Model Parameters ##############################################
 default_args:
@@ -5596,3 +5620,4 @@ max_retry:
   min: 1
   required: true
   max: 1000000 #~suggested
+
