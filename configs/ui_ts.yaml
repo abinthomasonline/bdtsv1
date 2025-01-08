@@ -4861,6 +4861,8 @@ exp_params:
 lr#maskgit-lr:
   type: number
   label: Learning rate
+  tags:
+    - High Impact
 
 gpu_device_id:
   type: number
@@ -4871,6 +4873,8 @@ seq_len:
   type: number
   label: Length of one time-series data
   min: 1
+  tags:
+    - High Impact
 
 trainer_params:
   type: object
@@ -4887,10 +4891,14 @@ stage1:
   type: number
   label: Discreted VAE training steps
   min: 1
+  tags:
+    - High Impact
 stage2:
   type: number
   label: Transformer training steps
   min: 1
+  tags:
+    - High Impact
 
 generate:
   type: skipped
@@ -4911,6 +4919,8 @@ dataset:
 dataset_name:
   type: text
   label: Dataset name
+  tags:
+    - Low Impact
 
 
 batch_sizes:
@@ -4923,10 +4933,65 @@ stage1#batch-size:
   type: number
   label: Batch size (discreted VAE)
   min: 32
+  tags:
+    - Medium Impact
 stage2#batch-size:
   type: number
   label: Batch size (transformer)
+  min: 16
+  tags:
+    - Medium Impact
 
+#ts:
+#  type: object
+#  label: Data
+#  fields:
+#    - static_id
+#    - other_static_columns#ts
+#    - sortby#ts
+#
+#static_id:
+#  type: select
+#  multi: true
+#  options: table-columns
+#  label: static ID
+#  conditions:
+#    - field: ./timeseries
+#      is: true
+#  tags:
+#    - High Impact
+#  documentation: |
+#    The columns that identify the static items, like the customer ID for a customer transaction table.
+#  required: true
+#other_static_columns#ts:
+#  type: select
+#  multi: true
+#  options: table-columns
+#  label: other static columns
+#  conditions:
+#    - field: ./timeseries
+#      is: true
+#  mutuallyExclusiveFields:
+#    - ./static_id
+#  tags:
+#    - High Impact
+#sortby#ts:
+#  type: select
+#  options: table-columns
+#  label: sort by column
+#  conditions:
+#    - field: ./timeseries
+#      is: true
+#  mutuallyExclusiveFields:
+#    - ./static_id
+#  tags:
+#    - High Impact
+#  documentation: |
+#    The column featuring the timeline so that the time-series can be sorted by time. For example, the transaction
+#    date-time would be the sort by column for transaction records table.
+#
+#single:
+#  type: skipped
 
 
 

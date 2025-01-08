@@ -498,7 +498,7 @@
       ["variance_threshold", 100, {}]
     ],
     "irreversible_reducers": []
-},
+  },
 
   "single": {
     "static_id": null,
