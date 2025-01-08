@@ -1,0 +1,672 @@
+{
+  "ts": {
+    "static_id": null,
+    "global_id": null,
+    "other_static_columns": null,
+    "sortby": [],
+    "do_aggregate": false,
+    "do_cumulate": false,
+    "temporal_rollers": [],
+    "context_rollers": [],
+    "include_length": false,
+    "include_length_before": false,
+    "include_length_remain": false,
+    "k_head": 0,
+    "trend_threshold": 1.0,
+    "major_threshold": 0.6,
+    "max_n_major": 0,
+    "compare_to0": false,
+    "compare_to_quantiles": [],
+    "long_series_threshold": 500,
+    "few_series_threshold": 10,
+    "default_roller_step": 20,
+    "data_format_args": {
+      "delimiter": ",",
+      "header": "infer",
+      "names": null,
+      "index_col": null,
+      "usecols": null,
+      "dtype": null,
+      "engine": null,
+      "true_values": null,
+      "false_values": null,
+      "skipinitialspace": false,
+      "skiprows": null,
+      "skipfooter": 0,
+      "nrows": null,
+      "na_values": [],
+      "keep_default_na": false,
+      "na_filter": true,
+      "skip_blank_lines": true,
+      "parse_dates": false,
+      "infer_datetime_format": false,
+      "keep_date_col": false,
+      "date_format": null,
+      "dayfirst": true,
+      "cache_dates": true,
+      "iterator": false,
+      "chunksize": null,
+      "compression": "infer",
+      "thousands": null,
+      "decimal": ".",
+      "lineterminator": null,
+      "quotechar": "\"",
+      "quoting": 0,
+      "doublequote": true,
+      "escapechar": null,
+      "comment": null,
+      "encoding": "utf-8",
+      "encoding_errors": "strict",
+      "dialect": null,
+      "on_bad_lines": "error",
+      "delim_whitespace": false,
+      "low_memory": true,
+      "memory_map": false,
+      "float_precision": null,
+      "storage_options": null,
+      "dtype_backend": "numpy_nullable"
+    },
+    "fill_sys_default": true,
+    "do_impute": false,
+    "do_reduce": false,
+    "drop_columns": [],
+    "dropna_columns": [],
+    "na_equivalences": ["-", "", "N/A", "nan", "na", "Nil", "Nil.", "#N/A", " ", "n/a", "null", "None", "-NaN",
+                              "-nan", "#NA", "#N/A N/A", "NULL", "<NA>", "NA", "NaN", "NaT"],
+    "target_columns": [],
+    "categorical_columns": [],
+    "numerical_columns": [],
+    "datetime_columns": [],
+    "timedelta_columns": [],
+    "mixed_columns": {},
+    "encoding_columns": {},
+    "non_std_columns": [],
+    "global_default_args": {
+      "ind_isna_change": false,
+      "dist_to_prev_isna": false,
+      "dist_ratio_to_prev_isna": false,
+      "keep_original_isna": true,
+      "agg_include_na_ratio": true,
+      "agg_include_unique_ratio": false,
+      "agg_k_top": 0,
+      "agg_k_first": 0,
+      "agg_k_last": 0,
+      "cum_include_na_ratio": true,
+      "cum_include_unique_ratio": false,
+      "cum_k_top": 0,
+      "cum_k_first": 0,
+      "cum_k_last": 0,
+      "roller_args": {
+        "context": {
+          "include_na_ratio": false,
+          "include_unique_ratio": false,
+          "k_top": 0,
+          "k_first": 0,
+          "k_last": 0
+        }
+      }
+    },
+    "default_discrete_kwargs": {
+      "ind_change": false,
+      "dist_to_prev": false,
+      "dist_ratio_to_prev": false,
+      "keep_original": true,
+      "agg_k_top": 2,
+      "agg_proportions_of": [],
+      "agg_include_n_unique": false,
+      "cum_k_top": 1,
+      "cum_proportions_of": [],
+      "cum_include_n_unique": false,
+      "roller_args": {
+        "context": {
+          "proportions_of": [],
+          "include_n_unique": false
+        }
+      }
+    },
+    "default_continuous_kwargs": {
+      "degrees": [0],
+      "indicate_increase": false,
+      "indicate_decrease": false,
+      "diff_ratio_in_range": false,
+      "agg_include_mean": true,
+      "agg_quantiles": [0.05, 0.95],
+      "agg_autocorr_lags": [],
+      "agg_check_increasing": false,
+      "agg_check_decreasing": false,
+      "agg_max_n_degrees": 0,
+      "agg_compare_to": [],
+      "agg_first_max_position": false,
+      "agg_first_min_position": false,
+      "agg_last_max_position": false,
+      "agg_last_min_position": false,
+      "agg_quantile_ranges": [
+        [0.0, 1.0]
+      ],
+      "agg_include_end_start_diff": true,
+      "agg_include_increase_ratio": true,
+      "agg_include_decrease_ratio": false,
+      "cum_include_mean": true,
+      "cum_quantiles": [],
+      "cum_autocorr_lags": [],
+      "cum_check_increasing": false,
+      "cum_check_decreasing": false,
+      "cum_max_n_degrees": 0,
+      "cum_compare_to": [],
+      "cum_first_max_position": false,
+      "cum_first_min_position": false,
+      "cum_last_max_position": false,
+      "cum_last_min_position": false,
+      "cum_quantile_ranges": [
+        [0.0, 1.0]
+      ],
+      "cum_include_end_start_diff": false,
+      "cum_include_increase_ratio": false,
+      "cum_include_decrease_ratio": false,
+      "roller_args": {
+        "context": {
+          "quantiles": [],
+          "autocorr_lags": [],
+          "check_increasing": false,
+          "check_decreasing": false,
+          "max_n_degrees": 0,
+          "compare_to": [],
+          "first_max_position": false,
+          "first_min_position": false,
+          "last_max_position": false,
+          "last_min_position": false,
+          "quantile_ranges": [],
+          "include_end_start_diff": true,
+          "include_increase_ratio": true,
+          "include_decrease_ratio": false
+        }
+      }
+    },
+    "default_categorical_kwargs": {
+      "max_n_category": 200,
+      "other_category": "<other>",
+      "pos_label": null,
+      "strip": null,
+      "case_sensitive": true,
+      "fillna_value": "<nan>",
+      "fillna_policy": "sample"
+    },
+    "default_numerical_kwargs": {
+      "is_percentage": false,
+      "separator": null,
+      "digit_group": 3,
+      "min_val": false,
+      "max_val": false,
+      "rounding": null,
+      "smallest_chunk": 1,
+      "fillna_value": null,
+      "fillna_policy": "sample",
+      "pct_change_periods": [],
+      "agg_include_std": true,
+      "agg_include_log_mean": true,
+      "agg_include_log_std": false,
+      "agg_include_sum": true,
+      "agg_include_skew": false,
+      "agg_include_kurt": false,
+      "cum_include_std": true,
+      "cum_include_log_mean": true,
+      "cum_include_log_std": false,
+      "cum_include_sum": true,
+      "cum_include_skew": false,
+      "cum_include_kurt": false,
+      "roller_args": {
+        "context": {
+          "include_std": true,
+          "include_log_mean": true,
+          "include_log_std": false,
+          "include_sum": true,
+          "include_skew": false,
+          "include_kurt": false
+        }
+      }
+    },
+    "default_datetime_kwargs": {
+      "datetime_format": null,
+      "min_val": false,
+      "max_val": false,
+      "min_significant_unit": "microsecond",
+      "smallest_chunk": 1,
+      "dayfirst": true,
+      "yearfirst": false,
+      "utc": false,
+      "exact": true,
+      "unit": null,
+      "origin": "unix",
+      "cache": true,
+      "fillna_value": null,
+      "fillna_policy": "sample",
+      "main_method": "numerical",
+      "auxiliary_methods": ["components_time"],
+      "additional_components": ["day_name", "month_name"],
+      "modify_by_additional_components": true,
+      "default_binary_component_args": {
+        "tensorize_method": "single",
+        "eps": 1e-6,
+        "threshold": 0.5
+      },
+      "default_multiclass_component_args": {
+        "tensorize_method": "one_hot",
+        "eps": 1e-6
+      },
+      "default_numerical_component_args": {
+        "normalize_method": "min_max",
+        "long_tail": false,
+        "smooth": 1,
+        "base": null,
+        "feature_range": [0, 1],
+        "clip": false
+      },
+      "special_component_args": {
+        "date": {
+          "raw_dtype": "datetime",
+          "min_significant_unit": "day",
+          "dayfirst": false,
+          "auxiliary_methods": [],
+          "additional_components": [],
+          "modify_by_additional_components": false
+        },
+        "time": {
+          "raw_dtype": "datetime",
+          "dayfirst": false,
+          "auxiliary_methods": [],
+          "additional_components": [],
+          "modify_by_additional_components": false
+        },
+        "year": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 1677,
+          "max_val": 2262
+        },
+        "month": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 1,
+          "max_val": 12
+        },
+        "day": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 1,
+          "max_val": 31
+        },
+        "hour": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 0,
+          "max_val": 23
+        },
+        "minute": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 0,
+          "max_val": 59
+        },
+        "second": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 0,
+          "max_val": 59
+        },
+        "microsecond": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 0,
+          "max_val": 999999
+        },
+        "nanosecond": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 0,
+          "max_val": 999
+        },
+        "dayofweek": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 0,
+          "max_val": 6
+        },
+        "dayofyear": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 1,
+          "max_val": 366
+        },
+        "daysinmonth": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 28,
+          "max_val": 31
+        },
+        "quarter": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 1,
+          "max_val": 4
+        },
+        "is_month_start": {
+          "raw_dtype": "categorical",
+          "pos_label": true
+        },
+        "is_month_end": {
+          "raw_dtype": "categorical",
+          "pos_label": true
+        },
+        "is_quarter_start": {
+          "raw_dtype": "categorical",
+          "pos_label": true
+        },
+        "is_quarter_end": {
+          "raw_dtype": "categorical",
+          "pos_label": true
+        },
+        "is_year_start": {
+          "raw_dtype": "categorical",
+          "pos_label": true
+        },
+        "is_year_end": {
+          "raw_dtype": "categorical",
+          "pos_label": true
+        },
+        "is_leap_year": {
+          "raw_dtype": "categorical",
+          "pos_label": true
+        },
+        "month_name": {
+          "raw_dtype": "categorical"
+        },
+        "day_name": {
+          "raw_dtype": "categorical"
+        },
+        "am_pm": {
+          "raw_dtype": "categorical",
+          "pos_label": "AM"
+        },
+        "weekofyear": {
+          "raw_dtype": "numerical",
+          "rounding": 0,
+          "min_val": 1,
+          "max_val": 53
+        }
+      }
+    },
+    "default_timedelta_kwargs": {
+      "min_val": false,
+      "max_val": false,
+      "min_significant_unit": "microsecond",
+      "smallest_chunk": 1,
+      "fillna_value": null,
+      "fillna_policy": "sample",
+      "pct_change_periods": [1],
+      "agg_include_sum": true,
+      "cum_include_sum": true,
+      "roller_args": {
+        "context": {
+          "include_sum": true
+        }
+      }
+    },
+    "default_mixed_kwargs": {
+      "base_type": "numerical",
+      "value_mapper": {},
+      "base_category": "<base>",
+      "include_base_ratio": true
+    },
+    "default_encoding_kwargs": {
+      "info_data": "country",
+      "info_column_kwargs": {},
+      "strip": null,
+      "case_sensitive": true,
+      "seen_only": true,
+      "fillna_policy": "sample",
+      "tensorize_method": "label",
+      "eps": 1e-6,
+      "n_neighbors": 5,
+      "algorithm": "auto",
+      "leaf_size": 30,
+      "metric": "minkowski",
+      "p": 2,
+      "metric_params": null,
+      "default_binary_component_kwargs": {
+        "tensorize_method": "single",
+        "eps": 1e-6,
+        "threshold": 0.5
+      },
+      "default_multiclass_component_kwargs": {
+        "tensorize_method": "one_hot",
+        "eps": 1e-6
+      },
+      "default_numerical_component_kwargs": {
+        "normalize_method": "standard",
+        "long_tail": false,
+        "smooth": 1,
+        "base": null,
+        "with_mean": true,
+        "with_std": true
+      },
+      "expand_columns": [],
+      "agg_show_info_columns": [],
+      "agg_include_other_ratio": true,
+      "cum_show_info_columns": [],
+      "cum_include_other_ratio": true,
+      "roller_args": {
+        "context": {
+          "show_info_columns": [],
+          "include_other_ratio": false
+        }
+      }
+    },
+    "default_non_std_kwargs": {
+      "strip": null,
+      "case_sensitive": true,
+      "fillna_value": null,
+      "fillna_policy": "sample"
+    },
+    "special_column_kwargs": {},
+    "force_min_category": 3,
+    "unique_threshold": 0.95,
+    "max_mixed_category": 5,
+    "label_threshold": 50,
+    "p_value_threshold": 0.05,
+    "default_binary_component_kwargs": {
+      "tensorize_method": "single",
+      "eps": 1e-6,
+      "threshold": 0.5
+    },
+    "default_multiclass_component_kwargs": {
+      "tensorize_method": "one_hot",
+      "eps": 1e-6
+    },
+    "default_numerical_component_kwargs": {
+      "normalize_method": "standard",
+      "long_tail": false,
+      "smooth": 1,
+      "base": null
+    },
+    "mask_target_ratio": 0,
+    "mask_range": [0.3, 0.7],
+    "mask_by_column": false,
+    "impute_columns": [],
+    "imputer_kwargs": {},
+    "important_columns": [],
+    "reversible_reducers": [
+      ["variance_threshold", 100, {}]
+    ],
+    "irreversible_reducers": []
+},
+
+  "single": {
+    "static_id": null,
+    "global_id": null,
+    "other_static_columns": null,
+    "sortby": [],
+    "do_aggregate": true,
+    "do_cumulate": true,
+    "temporal_rollers": [],
+    "context_rollers": [20],
+    "include_length": true,
+    "include_length_before": true,
+    "include_length_remain": true,
+    "k_head": 3,
+    "compare_to0": true,
+    "data_format_args": {
+      "na_values": [],
+      "keep_default_na": false,
+      "encoding": "utf-8"
+    },
+    "drop_columns": [],
+    "dropna_columns": [],
+    "na_equivalences": ["-", "", "N/A", "nan", "na", "Nil", "Nil.", "#N/A", " ", "n/a", "null", "None", "-NaN",
+                              "-nan", "#NA", "#N/A N/A", "NULL", "<NA>", "NA", "NaN", "NaT"],
+    "target_columns": [],
+    "categorical_columns": [],
+    "numerical_columns": [],
+    "datetime_columns": [],
+    "timedelta_columns": [],
+    "mixed_columns": {},
+    "encoding_columns": {},
+    "non_std_columns": [],
+    "global_default_args": {
+      "agg_include_na_ratio": true,
+      "agg_k_top": 0,
+      "agg_k_first": 1,
+      "agg_k_last": 1,
+      "cum_include_na_ratio": true,
+      "cum_k_first": 0,
+      "roller_args": {
+        "context": {
+          "include_na_ratio": false,
+          "k_first": 0
+        }
+      }
+    },
+    "default_discrete_kwargs": {
+      "ind_change": false,
+      "agg_k_top": 2,
+      "cum_k_top": 1
+    },
+    "default_continuous_kwargs": {
+      "degrees": [0, 1],
+      "indicate_increase": true,
+      "agg_include_mean": true,
+      "agg_quantiles": [0.05, 0.95],
+      "agg_compare_to": [],
+      "agg_quantile_ranges": [
+        [0.0, 1.0]
+      ],
+      "agg_include_end_start_diff": true,
+      "agg_include_increase_ratio": true,
+      "cum_include_mean": true,
+      "cum_quantiles": [],
+      "cum_quantile_ranges": [
+        [0.0, 1.0]
+      ],
+      "roller_args": {
+        "context": {
+          "quantiles": [],
+          "include_end_start_diff": true
+        }
+      }
+    },
+    "default_categorical_kwargs": {
+      "pos_label": null,
+      "strip": null,
+      "case_sensitive": true
+    },
+    "default_numerical_kwargs": {
+      "is_percentage": false,
+      "separator": null,
+      "digit_group": 3,
+      "min_val": false,
+      "max_val": false,
+      "rounding": null,
+      "smallest_chunk": 1,
+      "pct_change_periods": [1],
+      "agg_include_std": true,
+      "agg_include_log_mean": true,
+      "agg_include_sum": true,
+      "cum_include_std": true,
+      "cum_include_log_mean": true,
+      "cum_include_sum": true,
+      "roller_args": {
+        "context": {
+          "include_std": true,
+          "include_log_mean": true,
+          "include_sum": true
+        }
+      }
+    },
+    "default_datetime_kwargs": {
+      "datetime_format": null,
+      "min_val": false,
+      "max_val": false,
+      "min_significant_unit": "microsecond",
+      "smallest_chunk": 1,
+      "dayfirst": true,
+      "yearfirst": false,
+      "main_method": "numerical",
+      "auxiliary_methods": ["components_time"],
+      "additional_components": ["day_name", "month_name"],
+      "modify_by_additional_components": true
+    },
+    "default_timedelta_kwargs": {
+      "min_val": false,
+      "max_val": false,
+      "min_significant_unit": "microsecond",
+      "smallest_chunk": 1,
+      "pct_change_periods": [1],
+      "agg_include_sum": true,
+      "cum_include_sum": true,
+      "roller_args": {
+        "context": {
+          "include_sum": true
+        }
+      }
+    },
+    "default_mixed_kwargs": {
+      "base_type": "numerical",
+      "value_mapper": {}
+    },
+    "default_encoding_kwargs": {
+      "info_data": "country",
+      "info_column_kwargs": {},
+      "strip": null,
+      "case_sensitive": true,
+      "seen_only": true,
+      "n_neighbors": 5,
+      "expand_columns": [],
+      "agg_show_info_columns": [],
+      "agg_include_other_ratio": true,
+      "cum_show_info_columns": [],
+      "cum_include_other_ratio": false,
+      "roller_args": {
+        "context": {
+          "show_info_columns": [],
+          "include_other_ratio": false
+        }
+      }
+    },
+    "default_non_std_kwargs": {
+      "strip": null,
+      "case_sensitive": true
+    },
+    "special_column_kwargs": {},
+    "default_binary_component_kwargs": {
+      "tensorize_method": "single"
+    },
+    "default_multiclass_component_kwargs": {
+      "tensorize_method": "one_hot"
+    },
+    "default_numerical_component_kwargs": {
+      "normalize_method": "cluster_based",
+      "long_tail": false,
+      "max_clusters": 10,
+      "tensorize_method": "one_hot"
+    }
+  }
+}
