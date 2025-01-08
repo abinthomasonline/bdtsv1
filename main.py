@@ -9,9 +9,7 @@ import warnings
 from datetime import datetime
 
 import pickle
-from tabtransformer import TableTransformer
-from ARFSynthesizer import ARFSynthesizer
-from arflib import utils
+from tabtransformer import TableTransformer, TimeSeriesTransformer
 import pandas as pd
 import numpy as np
 
@@ -32,7 +30,7 @@ def prepare_args() -> argparse.Namespace:
     prepare_parser = subparsers.add_parser("prepare")
     prepare_parser.add_argument("--data-path", "-d", required=True)
     prepare_parser.add_argument("--data-policy", "-p", type=str,
-                                default="./configs/data/gan_core.json")
+                                default="./configs/data/data_config.json")
     prepare_parser.add_argument("--output-path", "-o", default="./out/ts_data_config_learn.json")
 
     validate_parser = subparsers.add_parser("validate")
@@ -46,16 +44,19 @@ def prepare_args() -> argparse.Namespace:
     preprocess_parser = subparsers.add_parser("preprocess")
     preprocess_parser.add_argument("--data-path", "-d", required=True)
     preprocess_parser.add_argument("--data-config", "-p", type=str,
-                                 default="./configs/data/gan_core.json")
+                                 default="./configs/data/data_config.json")
+    preprocess_parser.add_argument("--model-config", "-m", default="./configs/model/config.json")
+    preprocess_parser.add_argument("--if_val", "-v", default=False)
     preprocess_parser.add_argument("--output-path", "-o", default="./datasets/CustomDataset/")
 
 
     # Define the args related to model training
     train_parser = subparsers.add_parser("train")
-    train_parser.add_argument("--data-path", "-d", required=True)
+    train_parser.add_argument("--data-path", "-d", default="./datasets/CustomDataset/train.csv", required=True)
     train_parser.add_argument("--test-data-path", "-v", required=True)
     train_parser.add_argument("--model-config", "-m", type=str,
                               default="./configs/model/config.json")
+    train_parser.add_argument("--static_cond_dim", "-scd", required=True)
 
     # Define the args related to synthetic data generation (sampling)
     sample_parser = subparsers.add_parser("sample")
@@ -100,7 +101,67 @@ def validate(args: argparse.Namespace):
 
 
 def preprocess(args: argparse.Namespace):
-    pass
+    # Time series data pipeline
+    learn_args_path = args.data_config
+    # static_id = 'static_ids'
+    # sortby = 'Date'
+    # other_static_columns = ['Store', 'Dept', 'Type', 'Size']
+    data = args.data_path
+    with open(learn_args_path, "r") as f:
+        data_config_args = json.load(f)
+    learn_args = data_config_args['ts']
+    learn_single_args = data_config_args['single']
+    # learn_args['static_id'] = static_id
+    # learn_args['sortby'] = sortby
+    # learn_args['other_static_columns'] = other_static_columns
+    TimeSeriesTransformer.validate_kwargs(data, learn_args, learning=True)
+    TableTransformer.validate_kwargs(data, learn_single_args, learning=True)
+    data = load_data(data, **learn_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    if "data_format_args" in learn_args:
+        learn_args.pop("data_format_args")
+    if "data_format_args" in learn_single_args:
+        learn_single_args.pop("data_format_args")
+    data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
+    transformer_args = TimeSeriesTransformer.learn_args(data, json_compatible=True, **learn_args)
+    transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
+    TimeSeriesTransformer.validate_kwargs(data, transformer_args)
+    TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
+    # For further steps, if "data_format_args" is in `transformer_args`, remove it
+    if "data_format_args" in transformer_args:
+        transformer_args.pop("data_format_args")
+    if "data_format_args" in transformer_single_args:
+        transformer_single_args.pop("data_format_args")
+    transformer = TimeSeriesTransformer.make(**transformer_args)
+    transformer.fit(data)
+    transformer_single = TableTransformer.make(**transformer_single_args)
+    transformer_single.fit(data_static_cond)
+    static_cond_dim = transformer_single.tensorized_dim
+    augmented = transformer.transform(data, end_action="augment")
+    transformed_single = transformer_single.transform(data_static_cond.drop_duplicates(), start_action='drop',
+                                                      end_action='tensorize')
+    temporal_df = augmented.temporal.obj.copy()
+    temporal_df["betterdata_g_index"] = [x for x, in augmented.temporal.group_names]
+    static = transformed_single.copy()
+    static.columns = ["&".join(c) for c in static.columns]
+    static["betterdata_g_index"] = data[static_id].astype(str)
+    merged = temporal_df.merge(static, on="betterdata_g_index", how="inner")
+    print(temporal_df.columns.tolist(), other_static_columns)
+    temporal_columns = [c for c in data.columns if c not in other_static_columns and c != static_id and c != sortby]
+    temporal_columns = [c for c in temporal_df.columns if any(c.startswith(cc + " |||") for cc in temporal_columns)]
+    df_final = merged[static.columns.tolist() + temporal_columns].drop(columns=["betterdata_g_index"])
+    if args.if_val:
+        data_saving_path = args.output_path + 'val.csv'
+    else:
+        data_saving_path = args.output_path + 'train.csv'
+    df_final.to_csv(data_saving_path, index=False)
+
+    # update static_cond_dim in model_config.json
+    with open(args.model_config, "r") as f:
+        model_config = json.load(f)
+    config = {}
+    for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+    model_config['static_cond_dim'] = static_cond_dim
+
 
 
 
