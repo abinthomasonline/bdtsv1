@@ -1,7 +1,7 @@
-DATA_PATH = "datasets/CustomDataset/source_train.csv" # training dataset, csv file
-VAL_DATA_PATH="datasets/CustomDataset/source_val.csv" # validation dataset, csv file
+#DATA_PATH = "datasets/CustomDataset/source_train.csv" # source dataset before preprocessing, csv file
+#VAL_DATA_PATH="datasets/CustomDataset/source_val.csv" # source validation dataset before preprocessing, csv file
 DATA_SAVE_PATH = "datasets/CustomDataset"
-STATIC_COND_PATH="datasets/CustomDataset/static_cond.csv" # static conditions for TS data generation
+#STATIC_COND_PATH="datasets/CustomDataset/static_cond.csv" # static conditions for TS data generation
 DATA_POLICY_PATH="./configs/data/data_config.json"# 1a config file
 OUTPUT_PATH="./out"# output directory
 DATA_CONFIG_PATH="${OUTPUT_PATH}/data-config.json"  # learned and edited 1b config file
