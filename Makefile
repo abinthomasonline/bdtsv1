@@ -17,11 +17,11 @@ GEN_DATA_OUTPUT_PATH="$(OUTPUT_PATH)/data"
 prepare_ts:
 	@mkdir -p $(OUTPUT_PATH)
 	@python main.py prepare -d $(DATA_PATH) -p $(DATA_POLICY_PATH) -o $(DATA_CONFIG_PATH)
-	@python main.py -t -l $(LOG_LEVEL) preprocess -v False -d $(DATA_PATH) -p $(DATA_POLICY_PATH) -m $(MODEL_CONFIG_PATH)-o $(DATA_SAVE_PATH)
-	@python main.py -t -l $(LOG_LEVEL) preprocess -v True -d $(VAL_DATA_PATH) -p$(DATA_POLICY_PATH) -o $(DATA_SAVE_PATH)
 
 train_ts:
 	@mkdir -p $(MODEL_OUTPUT_PATH)
+	@python main.py -t -l $(LOG_LEVEL) preprocess -v False -d $(DATA_PATH) -p $(DATA_POLICY_PATH) -m $(MODEL_CONFIG_PATH)-o $(DATA_SAVE_PATH)
+	@python main.py -t -l $(LOG_LEVEL) preprocess -v True -d $(VAL_DATA_PATH) -p$(DATA_POLICY_PATH) -o $(DATA_SAVE_PATH)
 	@python3 main.py -t -l $(LOG_LEVEL) train \
       -d $(DATA_PATH) -v $(VAL_DATA_PATH) -m $(MODEL_CONFIG_PATH)
 
