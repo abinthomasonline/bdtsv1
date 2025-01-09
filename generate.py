@@ -41,9 +41,7 @@ def load_args():
 def evaluate(config: dict,
              dataset_name: str,
              static_cond_dim: int,
-             dataset_importer: DatasetImporterCustom,
              static_conditions,
-             train_data_loader: DataLoader,
              gpu_device_idx,
              use_fidelity_enhancer:bool,
              feature_extractor_type:str,
@@ -58,8 +56,7 @@ def evaluate(config: dict,
         torch.manual_seed(rand_seed)
         random.seed(rand_seed)
 
-    # n_classes = len(np.unique(train_data_loader.dataset.Y))
-    _, in_channels, input_length = train_data_loader.dataset.TS.shape
+    in_channels, input_length = config['dataset']['num_features'], config['seq_len']
     
     # wandb init
     wandb.init(project='TimeVQVAE-evaluation', 
@@ -67,12 +64,11 @@ def evaluate(config: dict,
 
     # conditional sampling
     # print('evaluating...')
-    evaluation = Evaluation(dataset_name, static_cond_dim, dataset_importer, in_channels, input_length, gpu_device_idx, config,
+    evaluation = Evaluation(dataset_name, static_cond_dim, in_channels, input_length, gpu_device_idx, config,
                             use_fidelity_enhancer=use_fidelity_enhancer,
                             feature_extractor_type=feature_extractor_type,
                             use_custom_dataset=use_custom_dataset).to(gpu_device_idx)
-    min_num_gen_samples = config['evaluation']['min_num_gen_samples']  # large enough to capture the distribution
-    (_, _, xhat), xhat_R = evaluation.sample(min(static_conditions.shape[0],min_num_gen_samples), static_conditions)
+    (_, _, xhat), xhat_R = evaluation.sample(static_conditions.shape[0], static_conditions)
     x_new = np.transpose(xhat, (0, 2, 1))
     if not os.path.isdir(get_root_dir().joinpath('synthetic_data')):
         os.mkdir(get_root_dir().joinpath('synthetic_data'))
@@ -95,17 +91,19 @@ if __name__ == '__main__':
         config = json.load(open(args.config))
     else:
         config = load_yaml_param_settings(args.config)
-    dataset_name = args.dataset_names[0]
+    dataset_name = config['dataset']['dataset_name']
     batch_size = config['evaluation']['batch_size']
-    dataset_importer = DatasetImporterCustom(train_data_path=args.train_data_path, test_data_path=args.test_data_path,
-                                             static_cond_dim=args.static_cond_dim, seq_len=args.seq_len,
-                                             **config['dataset'])
-    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for
-                                           kind in ['train', 'test']]
+    static_cond_dim = config['static_cond_dim']
+    seq_len = config['seq_len']
+    gpu_device_ind = config['gpu_device_id']
+    dataset_importer = DatasetImporterCustom(config=config, train_data_path=None,
+                                             test_data_path=args.static_cond_path, static_cond_dim=static_cond_dim,
+                                             seq_len=seq_len, **config['dataset'])
+    test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['test']]
     static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
     # print(static_conditions.shape)
     # generate synthetic data
-    evaluate(config, dataset_name, args.static_cond_dim, dataset_importer, static_conditions, train_data_loader, args.gpu_device_idx,
+    evaluate(config, dataset_name, args.static_cond_dim, static_conditions, args.gpu_device_idx,
              args.use_fidelity_enhancer, args.feature_extractor_type, args.use_custom_dataset)
 
     # clean memory

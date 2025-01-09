@@ -92,7 +92,8 @@
     }
   },
   "generate": {
-    "evaluation": {"batch_size": 32}
+    "evaluation": {"batch_size": 32},
+    "num_rows": 5000
     },
   "data": {
     "dataset": {

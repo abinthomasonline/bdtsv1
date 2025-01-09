@@ -110,7 +110,7 @@ if __name__ == '__main__':
     static_cond_dim = config['static_cond_dim']
     seq_len = config['seq_len']
     gpu_device_ind = config['gpu_device_id']
-    dataset_importer = DatasetImporterCustom(train_data_path=args.train_data_path,
+    dataset_importer = DatasetImporterCustom(config=config, train_data_path=args.train_data_path,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
     train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)

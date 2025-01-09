@@ -10,6 +10,7 @@ from datetime import datetime
 
 import pickle
 from tabtransformer import TableTransformer, TimeSeriesTransformer
+from arfpy import arf
 import pandas as pd
 import numpy as np
 
@@ -40,6 +41,14 @@ def prepare_args() -> argparse.Namespace:
                                  default="./out/ts_data_config_learn.json")
     validate_parser.add_argument("--output-path", "-o", default="./out/ts_data_config_learn.json")
 
+    # Define the args for conditions generation using ARF
+    arf_parser = subparsers.add_parser("arf")
+    arf_parser.add_argument("--data-path", "-d", required=True)
+    arf_parser.add_argument("--data-config", "-p", type=str, default="./configs/data/data_config.json")
+    arf_parser.add_argument("--model-config", "-m", type=str, default="./configs/model/config.json")
+    # arf_parser.add_argument("--sample-size", "-s", default=5000)
+    arf_parser.add_argument("--output-path", "-o", default="./datasets/CustomDataset/")
+
     # Define the args for data preprocessing
     preprocess_parser = subparsers.add_parser("preprocess")
     preprocess_parser.add_argument("--data-path", "-d", required=True)
@@ -47,6 +56,7 @@ def prepare_args() -> argparse.Namespace:
                                  default="./configs/data/data_config.json")
     preprocess_parser.add_argument("--model-config", "-m", default="./configs/model/config.json")
     preprocess_parser.add_argument("--if_val", "-v", default=False)
+    preprocess_parser.add_argument("--if_cond", "-c", default=False)
     preprocess_parser.add_argument("--output-path", "-o", default="./datasets/CustomDataset/")
 
 
@@ -68,18 +78,34 @@ def prepare_args() -> argparse.Namespace:
 
 
 def prepare(args: argparse.Namespace):
-    with open(args.data_policy, "r") as f:
-        data_config = json.load(f)
-
-    # Load original dataset ?
+    learn_args_path = args.data_config
     data = args.data_path
-    df_data = pd.read_csv(data)
+    with open(learn_args_path, "r") as f:
+        data_config_args = json.load(f)
+    learn_args = data_config_args['ts']
+    learn_single_args = data_config_args['single']
 
 
     # Define the proper data pipeline for your model
-    TableTransformer.validate_kwargs(df_data, data_config, learning=True)
-    learned_args = TableTransformer.learn_args(df_data, **data_config)
-    TableTransformer.validate_kwargs(df_data, learned_args, learning=False)
+    TimeSeriesTransformer.validate_kwargs(data, learn_args, learning=True)
+    TableTransformer.validate_kwargs(data, learn_single_args, learning=True)
+    data = load_data(data, **learn_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    if "data_format_args" in learn_args:
+        learn_args.pop("data_format_args")
+    if "data_format_args" in learn_single_args:
+        learn_single_args.pop("data_format_args")
+    data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
+    transformer_args = TimeSeriesTransformer.learn_args(data, json_compatible=True, **learn_args)
+    transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
+    TimeSeriesTransformer.validate_kwargs(data, transformer_args)
+    TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
+    if "data_format_args" in transformer_args:
+        transformer_args.pop("data_format_args")
+    if "data_format_args" in transformer_single_args:
+        transformer_single_args.pop("data_format_args")
+    learned_args = {}
+    learned_args['ts'] = transformer_args
+    learned_args['single'] = transformer_single_args
 
     directory = os.path.dirname(args.output_path)
     # Check if the directory exists
@@ -93,44 +119,80 @@ def prepare(args: argparse.Namespace):
 
 def validate(args: argparse.Namespace):
     data = args.data_path
-    df_data = pd.read_csv(data)
     with open(args.data_config, "r") as f:
-        data_config = json.load(f)
-
-    TableTransformer.validate_kwargs(df_data, data_config, learning=False)
-
-
-def preprocess(args: argparse.Namespace):
-    # Time series data pipeline
-    learn_args_path = args.data_config
-    # static_id = 'static_ids'
-    # sortby = 'Date'
-    # other_static_columns = ['Store', 'Dept', 'Type', 'Size']
-    data = args.data_path
-    with open(learn_args_path, "r") as f:
         data_config_args = json.load(f)
-    learn_args = data_config_args['ts']
-    learn_single_args = data_config_args['single']
-    # learn_args['static_id'] = static_id
-    # learn_args['sortby'] = sortby
-    # learn_args['other_static_columns'] = other_static_columns
-    TimeSeriesTransformer.validate_kwargs(data, learn_args, learning=True)
-    TableTransformer.validate_kwargs(data, learn_single_args, learning=True)
+    transformer_args = data_config_args['ts']
+    transformer_single_args = data_config_args['single']
     data = load_data(data, **learn_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
     if "data_format_args" in learn_args:
         learn_args.pop("data_format_args")
     if "data_format_args" in learn_single_args:
         learn_single_args.pop("data_format_args")
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
-    transformer_args = TimeSeriesTransformer.learn_args(data, json_compatible=True, **learn_args)
-    transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
+
     TimeSeriesTransformer.validate_kwargs(data, transformer_args)
     TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
+
+
+def warmup(args: argparse.Namespace):
+    # Conditions generation using arf
+    with open(args.model_config, "r") as f:
+        model_config = json.load(f)
+    config = {}
+    for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+    num_generated_samples = config['num_rows']
+    ## Data pipeline
+    data = args.data_path
+    learn_args_path = args.data_config
+    with open(learn_args_path, "r") as f:
+        data_config_args = json.load(f)
+    learn_args = data_config_args['single']
+    TableTransformer.validate_kwargs(data, learn_args, learning=True)
+    transformer_args = TableTransformer.learn_args(data, json_compatible=True, **learn_args)
+    TableTransformer.validate_kwargs(data, transformer_args)
+    data = load_data(data, **transformer_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
     # For further steps, if "data_format_args" is in `transformer_args`, remove it
     if "data_format_args" in transformer_args:
         transformer_args.pop("data_format_args")
+    transformer = TableTransformer.make(**transformer_args)
+    transformer.fit(data)
+    ## Train the ARF
+    arf_model = arf.arf(x=transformed)
+    ## Get density estimates
+    arf_model.forde()
+    ## Generate data
+    synthetic_data = arf_model.forge(n=num_generated_samples)
+    ## Inverse the data to source format
+    synthetic_data = synthetic_data.set_axis(pd.MultiIndex.from_tuples([tuple(c.split("&")) for c in synthetic_data.columns]), axis=1)
+    synthetic_data, _ = transformer.inverse_transform(synthetic_data, start_action='standardize')
+    cond_data_saving_path = args.output_path + "conditions_source.csv"
+    synthetic_data.to_csv(cond_data_saving_path, index=False)
+
+    # Dataset split (train:val = 9:1)
+    train_data = args.data_path
+
+
+    # Dataset transformation
+
+    pass
+
+def preprocess(args: argparse.Namespace):
+    # Time series data pipeline
+    learn_args_path = args.data_config
+    data = args.data_path
+    with open(learn_args_path, "r") as f:
+        data_config_args = json.load(f)
+    transformer_args = data_config_args['ts']
+    transformer_single_args = data_config_args['single']
+    static_id = transformer_args['static_id']
+    sortby = transformer_args['sortby']
+    other_static_columns = transformer_args['other_static_columns']
+    data = load_data(data, **transformer_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    if "data_format_args" in transformer_args:
+        learn_args.pop("data_format_args")
     if "data_format_args" in transformer_single_args:
-        transformer_single_args.pop("data_format_args")
+        learn_single_args.pop("data_format_args")
+    data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
     transformer = TimeSeriesTransformer.make(**transformer_args)
     transformer.fit(data)
     transformer_single = TableTransformer.make(**transformer_single_args)
@@ -151,6 +213,8 @@ def preprocess(args: argparse.Namespace):
     df_final = merged[static.columns.tolist() + temporal_columns].drop(columns=["betterdata_g_index"])
     if args.if_val:
         data_saving_path = args.output_path + 'val.csv'
+    elif args.if_cond:
+        data_saving_path = args.output_path + 'conditions.csv'
     else:
         data_saving_path = args.output_path + 'train.csv'
     df_final.to_csv(data_saving_path, index=False)
@@ -166,31 +230,43 @@ def preprocess(args: argparse.Namespace):
 
 
 def train(args: argparse.Namespace):
-    # load training configs
+    # load training configs for Stage1
     with open(args.model_config, "r") as f:
         model_config = json.load(f)
     config = {}
     for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+
+    # Stage1 training
     dataset_name = config['dataset']['dataset_name']
-    batch_size_stage1 = config['dataset']['batch_sizes']['stage1']
-    batch_size_stage2 = config['dataset']['batch_sizes']['stage2']
+    batch_size = config['dataset']['batch_sizes']['stage1']
     static_cond_dim = config['static_cond_dim']
     seq_len = config['seq_len']
     gpu_device_ind = config['gpu_device_id']
-    dataset_importer = DatasetImporterCustom(train_data_path=args.data_path,
+    dataset_importer = DatasetImporterCustom(config=config, train_data_path=args.train_data_path,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
-
-    # Stage 1 training
-    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size_stage1, dataset_importer, config, kind)
-                                           for
-                                           kind in ['train', 'test']]
+    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
+                                           for kind in ['train', 'test']]
     train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
+    model_config['data']['dataset'] = config['dataset']
+
+    # load training configs for Stage2
+    with open(args.model_config, "r") as f:
+        model_config = json.load(f)
+    config = {}
+    for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
 
     # Stage 2 training
-    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size_stage2, dataset_importer, config, kind)
-                                           for
-                                           kind in ['train', 'test']]
+    dataset_name = config['dataset']['dataset_name']
+    batch_size = config['dataset']['batch_sizes']['stage2']
+    static_cond_dim = config['static_cond_dim']
+    seq_len = config['seq_len']
+    gpu_device_ind = config['gpu_device_id']
+    dataset_importer = DatasetImporterCustom(config=config, train_data_path=args.train_data_path,
+                                             test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
+                                             seq_len=seq_len, **config['dataset'])
+    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
+                                           for kind in ['train', 'test']]
     train_stage2(config, dataset_name, static_cond_dim, train_data_loader, test_data_loader, gpu_device_ind,
                  feature_extractor_type='rocket', use_custom_dataset=True)
 
@@ -206,11 +282,10 @@ def generate(args: argparse.Namespace):
     static_cond_dim = config['static_cond_dim']
     seq_len = config['seq_len']
     gpu_device_ind = config['gpu_device_id']
-    dataset_importer = DatasetImporterCustom(train_data_path=args.data_path,
+    dataset_importer = DatasetImporterCustom(config=config, train_data_path=None,
                                              test_data_path=args.static_cond_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
-    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for
-                                           kind in ['train', 'test']]
+    test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['test']]
     static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
     # generate synthetic data
     evaluate(config, dataset_name, static_cond_dim, dataset_importer, static_conditions, train_data_loader,
@@ -219,6 +294,9 @@ def generate(args: argparse.Namespace):
 
     # clean memory
     torch.cuda.empty_cache()
+
+    # concatenate conditions and TS data and convert them back to the source format
+
 
 
 def BetterdataLogger(name='ml_logger', console_level='INFO', mode='MLOPS'):
@@ -342,13 +420,17 @@ def main():
         data_level = all_levels[all_levels.index(args.log_level) + 1]
     BetterdataLogger("data-pipeline", data_level)
     BetterdataLogger("tabformer", args.log_level)
-    BetterdataLogger("arf", args.log_level)
+    # BetterdataLogger("arf", args.log_level)
 
     start_time = datetime.now()
     if args.op == "prepare":
         prepare(args)
     elif args.op == "validate":
         validate(args)
+    elif args.op == "arf":
+        warmup(args)
+    elif args.op == "preprocess":
+        preprocess(args)
     elif args.op == "train":
         train(args)
     elif args.op == "sample":

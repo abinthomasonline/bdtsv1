@@ -1,7 +1,7 @@
 #DATA_PATH = "datasets/CustomDataset/source_train.csv" # source dataset before preprocessing, csv file
 #VAL_DATA_PATH="datasets/CustomDataset/source_val.csv" # source validation dataset before preprocessing, csv file
-DATA_SAVE_PATH = "datasets/CustomDataset"
-#STATIC_COND_PATH="datasets/CustomDataset/static_cond.csv" # static conditions for TS data generation
+DATA_SAVE_PATH = "datasets/CustomDataset/"
+#NUM_CONDITIONS = 5000
 DATA_POLICY_PATH="./configs/data/data_config.json"# 1a config file
 OUTPUT_PATH="./out"# output directory
 DATA_CONFIG_PATH="${OUTPUT_PATH}/data-config.json"  # learned and edited 1b config file
@@ -20,8 +20,10 @@ prepare_ts:
 
 train_ts:
 	@mkdir -p $(MODEL_OUTPUT_PATH)
-	@python main.py -t -l $(LOG_LEVEL) preprocess -v False -d $(DATA_PATH) -p $(DATA_POLICY_PATH) -m $(MODEL_CONFIG_PATH)-o $(DATA_SAVE_PATH)
-	@python main.py -t -l $(LOG_LEVEL) preprocess -v True -d $(VAL_DATA_PATH) -p$(DATA_POLICY_PATH) -o $(DATA_SAVE_PATH)
+	@python main.py -t -l $(LOG_LEVEL) arf -d $(DATA_PATH) -p $(DATA_CONFIG_PATH) -m $(MODEL_CONFIG_PATH) -s $(NUM_CONDITIONS) -o $(DATA_SAVE_PATH)
+	@python main.py -t -l $(LOG_LEVEL) preprocess -v False -c False -d $(DATA_PATH) -p $(DATA_POLICY_PATH) -m $(MODEL_CONFIG_PATH) -o $(DATA_SAVE_PATH)
+	@python main.py -t -l $(LOG_LEVEL) preprocess -v True -c False -d $(VAL_DATA_PATH) -p$(DATA_POLICY_PATH) -o $(DATA_SAVE_PATH)
+	@python main.py -t -l $(LOG_LEVEL) preprocess -v False -c True -d $(STATIC_COND_PATH) -p$(DATA_POLICY_PATH) -o $(DATA_SAVE_PATH)
 	@python3 main.py -t -l $(LOG_LEVEL) train \
       -d $(DATA_PATH) -v $(VAL_DATA_PATH) -m $(MODEL_CONFIG_PATH)
 

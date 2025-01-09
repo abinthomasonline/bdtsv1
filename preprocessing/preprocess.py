@@ -37,48 +37,73 @@ def sliding_window_view(data, window_size, step=1):
 
 
 class DatasetImporterCustom(object):
-    def __init__(self, train_data_path: str, test_data_path: str, static_cond_dim: int, seq_len: int, data_scaling: bool = True, **kwargs):
+    def __init__(self, config, train_data_path: str, test_data_path: str, static_cond_dim: int, seq_len: int, data_scaling: bool = True, **kwargs):
         # training and test datasets
         # typically, you'd load the data, for example, using pandas
 
         # fetch an entire dataset
         # df_train = pd.read_csv(train_data_path, sep='\t', header=None)
         # df_test = pd.read_csv(test_data_path, sep='\t', header=None)
-        df_train = pd.read_csv(train_data_path, skiprows=1, header=None)
-        df_test = pd.read_csv(test_data_path, skiprows=1, header=None)
-        df_train = df_train.astype('float32')
-        df_test = df_test.astype('float32')
-
-        self.TS_train, self.TS_test = df_train.iloc[:, static_cond_dim:].values, df_test.iloc[:, static_cond_dim:].values # (b n_features/n_channels)
-        _, n_channels = self.TS_train.shape
-        # print("Number of channels: ", n_channels)
-        self.SC_train, self.SC_test = df_train.iloc[:, 0:static_cond_dim].values, df_test.iloc[:, 0:static_cond_dim].values  # (b static_cond_dim)
-
-        # Transfer TS_train and TS_test to dimension (b c l)
-        self.TS_train, self.TS_test = sliding_window_view(self.TS_train, window_size=seq_len), sliding_window_view(self.TS_test, window_size=seq_len)
-        self.TS_train, self.TS_test = np.transpose(self.TS_train, axes=(0, 2, 1)), np.transpose(self.TS_test, axes=(0, 2, 1))
-        self.SC_train, self.SC_test = sliding_window_view(self.SC_train, window_size=seq_len), sliding_window_view(self.SC_test, window_size=seq_len)
-        self.SC_train, self.SC_test = np.delete(self.SC_train, obj=np.s_[1:], axis=1), np.delete(self.SC_test, obj=np.s_[1:], axis=1)
-        self.SC_train, self.SC_test = np.squeeze(self.SC_train), np.squeeze(self.SC_test)
-        # self.SC_train, self.SC_test = np.repeat(self.SC_train, n_channels, axis=1), np.repeat(self.SC_test, n_channels, axis=1)
+        if train_data_path:
+            df_train = pd.read_csv(train_data_path, skiprows=1, header=None)
+            df_train = df_train.astype('float32')
+            self.TS_train = df_train.iloc[:, static_cond_dim:].values # (b n_features/n_channels)
+            self.SC_train = df_train.iloc[:, 0:static_cond_dim].values # (b static_cond_dim)
+            # Transfer TS_train to (b c l)
+            self.TS_train = sliding_window_view(self.TS_train, window_size=seq_len)
+            self.TS_train = np.transpose(self.TS_train, axes=(0, 2, 1))
+            self.SC_train = sliding_window_view(self.SC_train, window_size=seq_len)
+            # remove duplicated condition rows
+            self.SC_train = np.delete(self.SC_train, obj=np.s_[1:], axis=1)
+            self.SC_train = np.squeeze(self.SC_train)
+            config['dataset']['num_features'] = self.TS_train.shape[1]
 
 
+        if test_data_path:
+            df_test = pd.read_csv(test_data_path, skiprows=1, header=None)
+            df_test = df_test.astype('float32')
+            self.TS_test = df_test.iloc[:, static_cond_dim:].values # (b n_features/n_channels)
+            self.SC_test = df_test.iloc[:, 0:static_cond_dim].values # (b static_cond_dim)
+            # Transfer TS_test to (b c l)
+            self.TS_test = sliding_window_view(self.TS_test, window_size=seq_len)
+            self.TS_test = np.transpose(self.TS_test, axes=(0, 2, 1))
+            self.SC_test = sliding_window_view(self.SC_test, window_size=seq_len)
+            # remove duplicated condition rows
+            self.SC_test = np.delete(self.SC_test, obj=np.s_[1:], axis=1)
+            self.SC_test = np.squeeze(self.SC_test)
+
+        # self.TS_train, self.TS_test = df_train.iloc[:, static_cond_dim:].values, df_test.iloc[:, static_cond_dim:].values # (b n_features/n_channels)
+        # _, n_channels = self.TS_train.shape
+        # # print("Number of channels: ", n_channels)
+        # self.SC_train, self.SC_test = df_train.iloc[:, 0:static_cond_dim].values, df_test.iloc[:, 0:static_cond_dim].values  # (b static_cond_dim)
+        #
+        # # Transfer TS_train and TS_test to dimension (b c l)
+        # self.TS_train, self.TS_test = sliding_window_view(self.TS_train, window_size=seq_len), sliding_window_view(self.TS_test, window_size=seq_len)
+        # self.TS_train, self.TS_test = np.transpose(self.TS_train, axes=(0, 2, 1)), np.transpose(self.TS_test, axes=(0, 2, 1))
+        # self.SC_train, self.SC_test = sliding_window_view(self.SC_train, window_size=seq_len), sliding_window_view(self.SC_test, window_size=seq_len)
+        # # remove duplicated condition rows
+        # self.SC_train, self.SC_test = np.delete(self.SC_train, obj=np.s_[1:], axis=1), np.delete(self.SC_test, obj=np.s_[1:], axis=1)
+        # self.SC_train, self.SC_test = np.squeeze(self.SC_train), np.squeeze(self.SC_test)
+        # # self.SC_train, self.SC_test = np.repeat(self.SC_train, n_channels, axis=1), np.repeat(self.SC_test, n_channels, axis=1)
 
         self.mean, self.std = 1., 1.
-        if data_scaling:
+        if data_scaling and train_data_path and test_data_path:
             self.mean = np.nanmean(self.TS_train, axis=(0, 2))[None, :, None]  # (1 c 1)
             self.std = np.nanstd(self.TS_train, axis=(0, 2))[None, :, None]  # (1 c 1)
             self.TS_train = (self.TS_train - self.mean) / self.std  # (b c l)
             self.TS_test = (self.TS_test - self.mean) / self.std  # (b c l)
 
-        np.nan_to_num(self.TS_train, copy=False)
-        np.nan_to_num(self.TS_test, copy=False)
+        if train_data_path:
+            np.nan_to_num(self.TS_train, copy=False)
+            config['dataset']['mean'] = self.mean
+            config['dataset']['std'] = self.std
+        if test_data_path:
+            np.nan_to_num(self.TS_test, copy=False)
 
-        print('self.TS_train.shape:', self.TS_train.shape)
-        print('self.TS_test.shape:', self.TS_test.shape)
-        print('self.SC_train.shape:', self.SC_train.shape)
-        print('self.SC_test.shape:', self.SC_test.shape)
-        # assert 0 == 1
+        # print('self.TS_train.shape:', self.TS_train.shape)
+        # print('self.TS_test.shape:', self.TS_test.shape)
+        # print('self.SC_train.shape:', self.SC_train.shape)
+        # print('self.SC_test.shape:', self.SC_test.shape)
 
 class CustomDataset(Dataset):
     def __init__(self, kind: str, dataset_importer: DatasetImporterCustom, **kwargs):
