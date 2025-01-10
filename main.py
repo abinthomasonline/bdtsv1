@@ -322,8 +322,7 @@ def generate(args: argparse.Namespace):
     static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
     # generate synthetic data
     evaluate(config, dataset_name, static_cond_dim, dataset_importer, static_conditions, train_data_loader,
-             gpu_device_ind,
-             use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
+             gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
 
     # clean memory
     torch.cuda.empty_cache()
