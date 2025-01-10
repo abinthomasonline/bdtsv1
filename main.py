@@ -10,6 +10,7 @@ from datetime import datetime
 
 import pickle
 from tabtransformer import TableTransformer, TimeSeriesTransformer
+
 from arfpy import arf
 import pandas as pd
 import numpy as np
@@ -18,6 +19,7 @@ import numpy as np
 from stage1 import *
 from stage2 import *
 from generate import *
+from source_to_dp import source_to_data_pipeline
 
 
 
@@ -37,43 +39,40 @@ def prepare_args() -> argparse.Namespace:
     validate_parser = subparsers.add_parser("validate")
     validate_parser.add_argument("--data-path", "-d", required=True)
     validate_parser.add_argument("--sample-size", "-s", default=50000)
-    validate_parser.add_argument("--data-config", "-p", type=str,
-                                 default="./out/ts_data_config_learn.json")
+    validate_parser.add_argument("--data-config", "-p", type=str, default="./out/ts_data_config_learn.json")
     validate_parser.add_argument("--output-path", "-o", default="./out/ts_data_config_learn.json")
 
     # Define the args for conditions generation using ARF
     arf_parser = subparsers.add_parser("arf")
     arf_parser.add_argument("--data-path", "-d", required=True)
-    arf_parser.add_argument("--data-config", "-p", type=str, default="./configs/data/data_config.json")
+    arf_parser.add_argument("--data-config", "-p", type=str, default="./out/ts_data_config_learn.json")
     arf_parser.add_argument("--model-config", "-m", type=str, default="./configs/model/config.json")
     # arf_parser.add_argument("--sample-size", "-s", default=5000)
-    arf_parser.add_argument("--output-path", "-o", default="./datasets/CustomDataset/")
+    arf_parser.add_argument("--output-path", "-o", default="./datasets/")
 
     # Define the args for data preprocessing
     preprocess_parser = subparsers.add_parser("preprocess")
     preprocess_parser.add_argument("--data-path", "-d", required=True)
-    preprocess_parser.add_argument("--data-config", "-p", type=str,
-                                 default="./configs/data/data_config.json")
+    preprocess_parser.add_argument("--data-config", "-p", type=str, default="./out/ts_data_config_learn.json")
     preprocess_parser.add_argument("--model-config", "-m", default="./configs/model/config.json")
     preprocess_parser.add_argument("--if_val", "-v", default=False)
     preprocess_parser.add_argument("--if_cond", "-c", default=False)
-    preprocess_parser.add_argument("--output-path", "-o", default="./datasets/CustomDataset/")
+    preprocess_parser.add_argument("--output-path", "-o", default="./datasets/")
 
 
     # Define the args related to model training
     train_parser = subparsers.add_parser("train")
-    train_parser.add_argument("--data-path", "-d", default="./datasets/CustomDataset/train.csv", required=True)
+    train_parser.add_argument("--data-path", "-d", default="./datasets/train.csv", required=True)
     train_parser.add_argument("--test-data-path", "-v", required=True)
-    train_parser.add_argument("--model-config", "-m", type=str,
-                              default="./configs/model/config.json")
-    train_parser.add_argument("--static_cond_dim", "-scd", required=True)
+    train_parser.add_argument("--model-config", "-m", type=str, default="./configs/model/config.json")
+    # train_parser.add_argument("--static_cond_dim", "-scd", required=True)
 
     # Define the args related to synthetic data generation (sampling)
     sample_parser = subparsers.add_parser("sample")
-    sample_parser.add_argument("--data-path", "-d", required=True)
+    # sample_parser.add_argument("--data-path", "-d", required=True)
     sample_parser.add_argument("--static-cond-path", "-sd", required=True)
-    sample_parser.add_argument("--model-config", "-m", type=str,
-                               default="./configs/model/config.json")
+    sample_parser.add_argument("--model-config", "-m", type=str, default="./configs/model/config.json")
+    sample_parser.add_argument("--output-path", "-o", required=True)
     return parser.parse_args()
 
 
@@ -85,7 +84,6 @@ def prepare(args: argparse.Namespace):
     learn_args = data_config_args['ts']
     learn_single_args = data_config_args['single']
 
-
     # Define the proper data pipeline for your model
     TimeSeriesTransformer.validate_kwargs(data, learn_args, learning=True)
     TableTransformer.validate_kwargs(data, learn_single_args, learning=True)
@@ -95,6 +93,7 @@ def prepare(args: argparse.Namespace):
     if "data_format_args" in learn_single_args:
         learn_single_args.pop("data_format_args")
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
+    # Learn configs
     transformer_args = TimeSeriesTransformer.learn_args(data, json_compatible=True, **learn_args)
     transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
     TimeSeriesTransformer.validate_kwargs(data, transformer_args)
@@ -103,6 +102,7 @@ def prepare(args: argparse.Namespace):
         transformer_args.pop("data_format_args")
     if "data_format_args" in transformer_single_args:
         transformer_single_args.pop("data_format_args")
+
     learned_args = {}
     learned_args['ts'] = transformer_args
     learned_args['single'] = transformer_single_args
@@ -146,16 +146,16 @@ def warmup(args: argparse.Namespace):
     learn_args_path = args.data_config
     with open(learn_args_path, "r") as f:
         data_config_args = json.load(f)
-    learn_args = data_config_args['single']
-    TableTransformer.validate_kwargs(data, learn_args, learning=True)
-    transformer_args = TableTransformer.learn_args(data, json_compatible=True, **learn_args)
-    TableTransformer.validate_kwargs(data, transformer_args)
-    data = load_data(data, **transformer_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
-    # For further steps, if "data_format_args" is in `transformer_args`, remove it
-    if "data_format_args" in transformer_args:
-        transformer_args.pop("data_format_args")
-    transformer = TableTransformer.make(**transformer_args)
-    transformer.fit(data)
+    transformer_single_args = data_config_args['single']
+    other_static_columns = transformer_single_args['other_static_columns']
+    data = load_data(data, **transformer_single_args.get("data_format_args", {}))
+    data_static_cond = data[[c for c in data.columns if c in other_static_columns]]# Skip if `data` is `pd.DataFrame` already
+    if "data_format_args" in transformer_single_args:
+        transformer_single_args.pop("data_format_args")
+    transformer = TableTransformer.make(**transformer_single_args)
+    transformer.fit(data_static_cond)
+    transformed = transformer.transform(data_static_cond, start_action='drop', end_action='standardize')  # For details of actions, see below
+    transformed = transformed.set_axis(["&".join(c) for c in transformed.columns], axis=1)
     ## Train the ARF
     arf_model = arf.arf(x=transformed)
     ## Get density estimates
@@ -165,28 +165,49 @@ def warmup(args: argparse.Namespace):
     ## Inverse the data to source format
     synthetic_data = synthetic_data.set_axis(pd.MultiIndex.from_tuples([tuple(c.split("&")) for c in synthetic_data.columns]), axis=1)
     synthetic_data, _ = transformer.inverse_transform(synthetic_data, start_action='standardize')
-    cond_data_saving_path = args.output_path + "conditions_source.csv"
-    synthetic_data.to_csv(cond_data_saving_path, index=False)
+    # cond_data_saving_path = args.output_path + "source_condition.csv"
+    synthetic_data.to_csv("./datasets/source_condition.csv", index=False)
 
     # Dataset split (train:val = 9:1)
-    train_data = args.data_path
+    source_data = args.data_path
+    df = pd.read_csv(source_data)
+
+    # Creating a dataframe with 90% values of original dataframe
+    train_set = df.sample(frac=0.9)
+
+    # Creating dataframe with rest of the 10% values
+    val_set = df.drop(train_set.index)
+
+    train_set.to_csv("./datasets/source_train.csv", index=False)
+    val_set.to_csv("./datasets/source_val.csv", index=False)
 
 
-    # Dataset transformation
+    # Dataset transformation from source to meet data pipeline requirements
+    source_train_path = "./datasets/source_train.csv"
+    source_val_path = "./datasets/source_val.csv"
+    source_condition_path = "./datasets/source_condition.csv"
+    df_train_to_dp = source_to_data_pipeline(source_train_path, seq_len, static_id, sortby, other_static_columns)
+    df_val_to_dp = source_to_data_pipeline(source_val_path, seq_len, static_id, sortby, other_static_columns)
+    df_condition_to_dp = source_to_data_pipeline(source_condition_path, seq_len, static_id, sortby, other_static_columns)
+    df_train_to_dp.to_csv("./datasets/dp_train.csv", index=False)
+    df_val_to_dp.to_csv("./datasets/dp_val.csv", index=False)
+    df_condition_to_dp.to_csv("./datasets/dp_condition.csv", index=False)
 
-    pass
 
 def preprocess(args: argparse.Namespace):
-    # Time series data pipeline
+    # Load configs
     learn_args_path = args.data_config
     data = args.data_path
     with open(learn_args_path, "r") as f:
         data_config_args = json.load(f)
+    # Data transformation config for time series
     transformer_args = data_config_args['ts']
+    # Data transformation config for single table
     transformer_single_args = data_config_args['single']
-    static_id = transformer_args['static_id']
-    sortby = transformer_args['sortby']
-    other_static_columns = transformer_args['other_static_columns']
+    static_id = transformer_single_args['static_id']
+    sortby = transformer_single_args['sortby']
+    other_static_columns = transformer_single_args['other_static_columns']
+    # Time series data pipeline
     data = load_data(data, **transformer_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
     if "data_format_args" in transformer_args:
         learn_args.pop("data_format_args")
@@ -211,28 +232,37 @@ def preprocess(args: argparse.Namespace):
     temporal_columns = [c for c in data.columns if c not in other_static_columns and c != static_id and c != sortby]
     temporal_columns = [c for c in temporal_df.columns if any(c.startswith(cc + " |||") for cc in temporal_columns)]
     df_final = merged[static.columns.tolist() + temporal_columns].drop(columns=["betterdata_g_index"])
+
+    # save transformed data
     if args.if_val:
         data_saving_path = args.output_path + 'val.csv'
     elif args.if_cond:
-        data_saving_path = args.output_path + 'conditions.csv'
+        data_saving_path = args.output_path + 'condition.csv'
     else:
         data_saving_path = args.output_path + 'train.csv'
     df_final.to_csv(data_saving_path, index=False)
 
     # update static_cond_dim in model_config.json
+    new_model_config_save_path = args.model_config
     with open(args.model_config, "r") as f:
         model_config = json.load(f)
-    config = {}
-    for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
-    model_config['static_cond_dim'] = static_cond_dim
+        f.close()
+
+    model_config['train']['static_cond_dim'] = static_cond_dim
+    os.rename(new_model_config_save_path)
+
+    with open(new_model_config_save_path, "w") as f:
+        json.dump(model_config, f)
 
 
 
 
 def train(args: argparse.Namespace):
     # load training configs for Stage1
+    new_model_config_save_path = args.model_config
     with open(args.model_config, "r") as f:
         model_config = json.load(f)
+        f.close()
     config = {}
     for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
 
@@ -249,6 +279,9 @@ def train(args: argparse.Namespace):
                                            for kind in ['train', 'test']]
     train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
     model_config['data']['dataset'] = config['dataset']
+    os.remove(new_model_config_save_path)
+    with open(new_model_config_save_path, "w") as f:
+        json.dump(model_config, f)
 
     # load training configs for Stage2
     with open(args.model_config, "r") as f:
@@ -296,6 +329,13 @@ def generate(args: argparse.Namespace):
     torch.cuda.empty_cache()
 
     # concatenate conditions and TS data and convert them back to the source format
+    cond_file_path = "./datasets/source_condition.csv"
+    ts_file_path = os.path.join(f'synthetic_data', f'synthetic-{dataset_name}.csv')
+    df_condition = pd.read_csv(cond_file_path)
+    df_ts = pd.read_csv(ts_file_path)
+    df_syn = pd.concat([df_condition, df_ts], axis=1)
+    df_syn.to_csv(args.output_path + "synthetic_final.csv", index=False)
+
 
 
 

@@ -72,11 +72,11 @@ def evaluate(config: dict,
     x_new = np.transpose(xhat, (0, 2, 1))
     if not os.path.isdir(get_root_dir().joinpath('synthetic_data')):
         os.mkdir(get_root_dir().joinpath('synthetic_data'))
-    np_file_path = os.path.join(f'synthetic_data', f'synthetic-{dataset_name}.npy')
-    csv_file_path = os.path.join(f'synthetic_data', f'synthetic-{dataset_name}.csv')
+    np_file_path = os.path.join(f'synthetic_data', f'ts-synthetic-{dataset_name}.npy')
+    csv_file_path = os.path.join(f'synthetic_data', f'ts-synthetic-{dataset_name}.csv')
     np.save(np_file_path, x_new)
-    dim1 = x_new.shape[0] * x_new.shape[1]
-    dim2 = x_new.shape[2]
+    dim1 = x_new.shape[0]
+    dim2 = x_new.shape[1] * x_new.shape[2]
     df = pd.DataFrame(x_new.reshape((dim1, dim2)))
     df.to_csv(csv_file_path)
 

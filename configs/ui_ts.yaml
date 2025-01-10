@@ -179,13 +179,13 @@ stage2#batch-size:
   tags:
     - Medium Impact
 
-ts:
+single:
   type: object
   label: Data
   fields:
     - static_id
-    - other_static_columns#ts
-    - sortby#ts
+    - other_static_columns
+    - sortby
 
 static_id:
   type: select
@@ -197,7 +197,7 @@ static_id:
   documentation: |
     The columns that identify the static items, like the customer ID for a customer transaction table.
   required: true
-other_static_columns#ts:
+other_static_columns:
   type: select
   multi: true
   options: columns
@@ -206,7 +206,7 @@ other_static_columns#ts:
     - ./static_id
   tags:
     - High Impact
-sortby#ts:
+sortby:
   type: select
   options: columns
   label: Sort by this column (leave it blank if not applicable)
@@ -218,5 +218,5 @@ sortby#ts:
     The column featuring the timeline so that the time-series can be sorted by time. For example, the transaction
     date-time would be the sort by column for transaction records table.
 
-single:
+ts:
   type: skipped
