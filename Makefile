@@ -41,7 +41,7 @@ train_ts:
 	@python3 main.py -t -l $(LOG_LEVEL) train -d $(TRAIN_DATA_PATH) -v $(VAL_DATA_PATH) -m $(MODEL_CONFIG_PATH)
 
 wrapup_train_ts:
-	@mv ./saved_models/* $(MODEL_OUTPUT_PATH)
+	@cp ./saved_models/* $(MODEL_OUTPUT_PATH)
 	@echo "Training Completed"
 
 sample_ts:
