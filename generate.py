@@ -78,7 +78,7 @@ def evaluate(config: dict,
     dim1 = x_new.shape[0]
     dim2 = x_new.shape[1] * x_new.shape[2]
     df = pd.DataFrame(x_new.reshape((dim1, dim2)))
-    df.to_csv(csv_file_path)
+    df.to_csv(csv_file_path, index=False)
 
 
     wandb.finish()
