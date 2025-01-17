@@ -31,53 +31,49 @@ def prepare_args() -> argparse.Namespace:
     subparsers = parser.add_subparsers(dest="op")
 
     prepare_parser = subparsers.add_parser("prepare")
-    prepare_parser.add_argument("--data-path", "-d", required=True)
-    prepare_parser.add_argument("--data-policy", "-p", type=str,
-                                default="./configs/data/data_config.json")
-    prepare_parser.add_argument("--output-path", "-o", default="./out/ts_data_config_learn.json")
+    prepare_parser.add_argument("--data_path", "-d", required=True)
+    prepare_parser.add_argument("--data_policy", "-p", type=str, default="./configs/data/data_config.json")
+    prepare_parser.add_argument("--output_path", "-o", default="./out/ts_data_config_learn.json")
 
     validate_parser = subparsers.add_parser("validate")
-    validate_parser.add_argument("--data-path", "-d", required=True)
-    validate_parser.add_argument("--sample-size", "-s", default=50000)
-    validate_parser.add_argument("--data-config", "-p", type=str, default="./out/ts_data_config_learn.json")
-    validate_parser.add_argument("--output-path", "-o", default="./out/ts_data_config_learn.json")
+    validate_parser.add_argument("--data_path", "-d", required=True)
+    validate_parser.add_argument("--data_config", "-p", type=str, default="./out/ts_data_config_learn.json")
+    validate_parser.add_argument("--output_path", "-o", default="./out/ts_data_config_learn.json")
 
     # Define the args for conditions generation using ARF
     arf_parser = subparsers.add_parser("arf")
-    arf_parser.add_argument("--data-path", "-d", required=True)
-    arf_parser.add_argument("--data-config", "-p", type=str, default="./out/ts_data_config_learn.json")
-    arf_parser.add_argument("--model-config", "-m", type=str, default="./configs/model/config.json")
-    # arf_parser.add_argument("--sample-size", "-s", default=5000)
-    arf_parser.add_argument("--output-path", "-o", default="./datasets/")
+    arf_parser.add_argument("--data_path", "-d", required=True)
+    arf_parser.add_argument("--data_config", "-p", type=str, default="./out/ts_data_config_learn.json")
+    arf_parser.add_argument("--model_config", "-m", type=str, default="./configs/model/config.json")
+    arf_parser.add_argument("--output_path", "-o", default="./datasets/")
 
     # Define the args for data preprocessing
     preprocess_parser = subparsers.add_parser("preprocess")
-    preprocess_parser.add_argument("--data-path", "-d", required=True)
-    preprocess_parser.add_argument("--data-config", "-p", type=str, default="./out/ts_data_config_learn.json")
-    preprocess_parser.add_argument("--model-config", "-m", default="./configs/model/config.json")
+    preprocess_parser.add_argument("--data_path", "-d", required=True)
+    preprocess_parser.add_argument("--data_config", "-p", type=str, default="./out/ts_data_config_learn.json")
+    preprocess_parser.add_argument("--model_config", "-m", default="./configs/model/config.json")
     preprocess_parser.add_argument("--if_val", "-v", default=False)
     preprocess_parser.add_argument("--if_cond", "-c", default=False)
-    preprocess_parser.add_argument("--output-path", "-o", default="./datasets/")
+    preprocess_parser.add_argument("--output_path", "-o", default="./datasets/")
 
 
     # Define the args related to model training
     train_parser = subparsers.add_parser("train")
-    train_parser.add_argument("--data-path", "-d", default="./datasets/train.csv", required=True)
-    train_parser.add_argument("--test-data-path", "-v", required=True)
-    train_parser.add_argument("--model-config", "-m", type=str, default="./configs/model/config.json")
+    train_parser.add_argument("--data_path", "-d", default="./datasets/train.csv", required=True)
+    train_parser.add_argument("--test_data_path", "-v", required=True)
+    train_parser.add_argument("--model_config", "-m", type=str, default="./configs/model/config.json")
     # train_parser.add_argument("--static_cond_dim", "-scd", required=True)
 
     # Define the args related to synthetic data generation (sampling)
     sample_parser = subparsers.add_parser("sample")
-    # sample_parser.add_argument("--data-path", "-d", required=True)
     sample_parser.add_argument("--static-cond-path", "-sd", required=True)
-    sample_parser.add_argument("--model-config", "-m", type=str, default="./configs/model/config.json")
-    sample_parser.add_argument("--output-path", "-o", required=True)
+    sample_parser.add_argument("--model_config", "-m", type=str, default="./configs/model/config.json")
+    sample_parser.add_argument("--output_path", "-o", required=True)
     return parser.parse_args()
 
 
 def prepare(args: argparse.Namespace):
-    learn_args_path = args.data_config
+    learn_args_path = args.data_policy
     data = args.data_path
     with open(learn_args_path, "r") as f:
         data_config_args = json.load(f)
