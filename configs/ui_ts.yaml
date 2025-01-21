@@ -179,7 +179,7 @@ stage2#batch-size:
   tags:
     - Medium Impact
 
-single:
+ts:
   type: object
   label: Data
   fields:
@@ -218,5 +218,5 @@ sortby:
     The column featuring the timeline so that the time-series can be sorted by time. For example, the transaction
     date-time would be the sort by column for transaction records table.
 
-ts:
+single:
   type: skipped
