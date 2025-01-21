@@ -212,6 +212,7 @@ sortby:
   label: Sort by this column (leave it blank if not applicable)
   mutuallyExclusiveFields:
     - ./static_id
+  parseEmptyAsNull: True
   tags:
     - High Impact
   documentation: |
