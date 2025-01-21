@@ -77,30 +77,32 @@ def prepare(args: argparse.Namespace):
     data = args.data_path
     with open(learn_args_path, "r") as f:
         data_config_args = json.load(f)
-    learn_args = data_config_args['ts']
+
+    learn_ts_args = data_config_args['ts']
     learn_single_args = data_config_args['single']
+    other_static_columns = learn_ts_args['other_static_columns']
 
     # Define the proper data pipeline for your model
-    TimeSeriesTransformer.validate_kwargs(data, learn_args, learning=True)
+    TimeSeriesTransformer.validate_kwargs(data, learn_ts_args, learning=True)
     TableTransformer.validate_kwargs(data, learn_single_args, learning=True)
-    data = load_data(data, **learn_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
-    if "data_format_args" in learn_args:
-        learn_args.pop("data_format_args")
+    data = load_data(data, **learn_ts_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    if "data_format_args" in learn_ts_args:
+        learn_ts_args.pop("data_format_args")
     if "data_format_args" in learn_single_args:
         learn_single_args.pop("data_format_args")
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
     # Learn configs
-    transformer_args = TimeSeriesTransformer.learn_args(data, json_compatible=True, **learn_args)
+    transformer_ts_args = TimeSeriesTransformer.learn_args(data, json_compatible=True, **learn_ts_args)
     transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
-    TimeSeriesTransformer.validate_kwargs(data, transformer_args)
+    TimeSeriesTransformer.validate_kwargs(data, transformer_ts_args)
     TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
-    if "data_format_args" in transformer_args:
-        transformer_args.pop("data_format_args")
+    if "data_format_args" in transformer_ts_args:
+        transformer_ts_args.pop("data_format_args")
     if "data_format_args" in transformer_single_args:
         transformer_single_args.pop("data_format_args")
 
     learned_args = {}
-    learned_args['ts'] = transformer_args
+    learned_args['ts'] = transformer_ts_args
     learned_args['single'] = transformer_single_args
 
     directory = os.path.dirname(args.output_path)
@@ -117,8 +119,12 @@ def validate(args: argparse.Namespace):
     data = args.data_path
     with open(args.data_config, "r") as f:
         data_config_args = json.load(f)
-    transformer_args = data_config_args['ts']
+    transformer_ts_args = data_config_args['ts']
     transformer_single_args = data_config_args['single']
+    # static_id = transformer_ts_args['static_id']
+    # sortby = transformer_ts_args['sortby']
+    other_static_columns = transformer_ts_args['other_static_columns']
+
     data = load_data(data, **learn_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
     if "data_format_args" in learn_args:
         learn_args.pop("data_format_args")
@@ -126,7 +132,7 @@ def validate(args: argparse.Namespace):
         learn_single_args.pop("data_format_args")
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
 
-    TimeSeriesTransformer.validate_kwargs(data, transformer_args)
+    TimeSeriesTransformer.validate_kwargs(data, transformer_ts_args)
     TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
 
 
@@ -137,13 +143,19 @@ def warmup(args: argparse.Namespace):
     config = {}
     for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
     num_generated_samples = config['num_rows']
+    seq_len = config['seq_len']
     ## Data pipeline
     data = args.data_path
     learn_args_path = args.data_config
     with open(learn_args_path, "r") as f:
         data_config_args = json.load(f)
+
+    transformer_ts_args = data_config_args['ts']
     transformer_single_args = data_config_args['single']
-    other_static_columns = transformer_single_args['other_static_columns']
+    static_id = transformer_ts_args['static_id']
+    sortby = transformer_ts_args['sortby']
+    other_static_columns = transformer_ts_args['other_static_columns']
+
     data = load_data(data, **transformer_single_args.get("data_format_args", {}))
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]# Skip if `data` is `pd.DataFrame` already
     if "data_format_args" in transformer_single_args:
@@ -197,15 +209,15 @@ def preprocess(args: argparse.Namespace):
     with open(learn_args_path, "r") as f:
         data_config_args = json.load(f)
     # Data transformation config for time series
-    transformer_args = data_config_args['ts']
+    transformer_ts_args = data_config_args['ts']
     # Data transformation config for single table
     transformer_single_args = data_config_args['single']
-    static_id = transformer_single_args['static_id']
-    sortby = transformer_single_args['sortby']
-    other_static_columns = transformer_single_args['other_static_columns']
+    static_id = transformer_ts_args['static_id']
+    sortby = transformer_ts_args['sortby']
+    other_static_columns = transformer_ts_args['other_static_columns']
     # Time series data pipeline
-    data = load_data(data, **transformer_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
-    if "data_format_args" in transformer_args:
+    data = load_data(data, **transformer_ts_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    if "data_format_args" in transformer_ts_args:
         learn_args.pop("data_format_args")
     if "data_format_args" in transformer_single_args:
         learn_single_args.pop("data_format_args")
@@ -245,7 +257,7 @@ def preprocess(args: argparse.Namespace):
         f.close()
 
     model_config['train']['static_cond_dim'] = static_cond_dim
-    os.rename(new_model_config_save_path)
+    os.remove(new_model_config_save_path)
 
     with open(new_model_config_save_path, "w") as f:
         json.dump(model_config, f)

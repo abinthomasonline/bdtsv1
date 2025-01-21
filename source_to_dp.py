@@ -14,15 +14,20 @@ def source_to_data_pipeline(source_data_path, seq_len, static_id, sortby, other_
     # get ts column names
     ts_col_names = [c for c in df.columns if
                     "Unnamed" not in c and c not in other_static_columns and c != static_id and c != sortby]
+    extracted_ts_col_names = []
+    for i in range(len(ts_col_names)):
+        if i % seq_len == 0:
+            extracted_ts_col_names.append(ts_col_names[i])
     # extract ts data and convert to the shape required by next step
     ts = df[[c for c in df.columns if c not in other_static_columns and c != static_id and c != sortby]]
     ts = ts.to_numpy()
+    # print(extracted_ts_col_names)
     ts = np.reshape(ts, (ts.shape[0], seq_len, ts.shape[1] // seq_len))
     dim = ts.shape[0] * ts.shape[1]
     dim2 = ts.shape[2]
     ts = np.reshape(ts, (dim, dim2))
     # convert ts data back to df
-    ts_df = pd.DataFrame(ts, columns=ts_col_names)
+    ts_df = pd.DataFrame(ts, columns=extracted_ts_col_names)
 
     # extract static data and repeat seq_len times
     static_df = df[[c for c in df.columns if c in other_static_columns or c == static_id or c == sortby]]
