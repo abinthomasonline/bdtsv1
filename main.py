@@ -10,6 +10,7 @@ from datetime import datetime
 
 import pickle
 from tabtransformer import TableTransformer, TimeSeriesTransformer
+from tabtransformer.utils import load_data
 
 from arfpy import arf
 import pandas as pd
