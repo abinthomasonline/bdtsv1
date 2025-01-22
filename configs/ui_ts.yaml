@@ -189,7 +189,6 @@ ts:
 
 static_id:
   type: select
-  multi: true
   options: columns
   label: Column of static ID (data index)
   tags:
