@@ -73,6 +73,7 @@ exp_params:
 lr#maskgit-lr:
   type: number
   label: Learning rate
+  decimal: true
   tags:
     - High Impact
 
