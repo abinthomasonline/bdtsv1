@@ -231,7 +231,7 @@ def preprocess(args: argparse.Namespace):
     transformer_single = TableTransformer.make(**transformer_single_args)
     transformer_single.fit(data_static_cond)
     static_cond_dim = transformer_single.tensorized_dim
-    augmented = transformer.transform(data, end_action="augment")
+    augmented = transformer.transform(data, end_action="augment") # can change action to "clean/standarize" to handle missing values in TS data by sampling from existing values
     transformed_single = transformer_single.transform(data_static_cond.drop_duplicates(), start_action='drop',
                                                       end_action='tensorize')
     temporal_df = augmented.temporal.obj.copy()
