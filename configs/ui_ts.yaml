@@ -221,4 +221,18 @@ sortby:
     date-time would be the sort by column for transaction records table.
 
 single:
-  type: skipped
+  type: object
+  label: Data
+  fields:
+    - drop_columns
+
+
+drop_columns:
+  type: select
+  multi: true
+  options: columns
+  label: Drop the columns we currently do not support (e.g., emails)
+  mutuallyExclusiveFields:
+    - ./static_id
+  tags:
+    - High Impact
