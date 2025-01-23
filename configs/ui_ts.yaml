@@ -182,7 +182,7 @@ stage2#batch-size:
 
 ts:
   type: object
-  label: Temporal Data
+  label: Temporal data
   fields:
     - static_id
     - other_static_columns
