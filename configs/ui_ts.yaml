@@ -225,6 +225,7 @@ single:
   label: Data
   fields:
     - drop_columns
+    - na_equivalences
 
 
 drop_columns:
@@ -234,5 +235,12 @@ drop_columns:
   label: Drop the columns we currently do not support (e.g., emails)
   mutuallyExclusiveFields:
     - ./static_id
+  tags:
+    - High Impact
+
+na_equivalences:
+  type: text
+  label: Missing indicators
+  initialValue: “[]”
   tags:
     - High Impact
