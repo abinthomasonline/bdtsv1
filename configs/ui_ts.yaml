@@ -182,7 +182,7 @@ stage2#batch-size:
 
 ts:
   type: object
-  label: Data
+  label: Temporal Data
   fields:
     - static_id
     - other_static_columns
@@ -222,7 +222,7 @@ sortby:
 
 single:
   type: object
-  label: Data
+  label: Static data
   fields:
     - drop_columns
     - na_equivalences
@@ -240,7 +240,7 @@ drop_columns:
 
 na_equivalences:
   type: text
-  label: Missing indicators
+  label: Missing value indicators
   initialValue: “[]”
   tags:
     - High Impact
