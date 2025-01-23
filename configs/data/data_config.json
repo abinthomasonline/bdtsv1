@@ -508,7 +508,7 @@
   },
   "drop_columns": [],
   "dropna_columns": [],
-  "na_equivalences": ["-", "", "N/A", "nan", "na", "Nil", "Nil.", "#N/A", " ", "n/a", "null", "None", "-NaN",
+  "na_equivalences": ["[]", "-", "", "N/A", "nan", "na", "Nil", "Nil.", "#N/A", " ", "n/a", "null", "None", "-NaN",
                             "-nan", "#NA", "#N/A N/A", "NULL", "<NA>", "NA", "NaN", "NaT"],
   "target_columns": [],
   "categorical_columns": [],
