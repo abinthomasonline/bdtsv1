@@ -165,6 +165,9 @@ def warmup(args: argparse.Namespace):
     transformer.fit(data_static_cond)
     transformed = transformer.transform(data_static_cond, start_action='drop', end_action='standardize')  # For details of actions, see below
     transformed = transformed.set_axis(["&".join(c) for c in transformed.columns], axis=1)
+    bool_cols_name = transformed.select_dtypes(include="boolean").columns
+    bool_to_int = {k: np.int32 for k in bool_cols_name}
+    transformed = transformed.astype(bool_to_int)
     ## Train the ARF
     arf_model = arf.arf(x=transformed)
     ## Get density estimates
