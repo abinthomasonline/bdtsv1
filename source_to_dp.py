@@ -22,6 +22,7 @@ def source_to_data_pipeline(source_data_path, seq_len, static_id, sortby, other_
     ts = df[[c for c in df.columns if c not in other_static_columns and c != static_id and c != sortby]]
     ts = ts.to_numpy()
     # print(extracted_ts_col_names)
+    print("temporal data shape: {}, seq_len is: {}".format(ts.shape, seq_len))
     ts = np.reshape(ts, (ts.shape[0], seq_len, ts.shape[1] // seq_len))
     dim = ts.shape[0] * ts.shape[1]
     dim2 = ts.shape[2]
