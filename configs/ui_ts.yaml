@@ -225,7 +225,7 @@ single:
   label: Static data
   fields:
     - drop_columns
-    - na_equivalences
+#    - na_equivalences
 
 
 drop_columns:
@@ -238,9 +238,9 @@ drop_columns:
   tags:
     - High Impact
 
-na_equivalences:
-  type: text
-  label: Missing value indicators
-  initialValue: “[]”
-  tags:
-    - High Impact
+#na_equivalences:
+#  type: text
+#  label: Missing value indicators
+#  initialValue: “[]”
+#  tags:
+#    - High Impact
