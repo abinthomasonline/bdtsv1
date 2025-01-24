@@ -60,7 +60,7 @@ train:
   type: object
   label: Training
   fields:
-    - gpu_device_id
+#    - gpu_device_id
     - seq_len
     - exp_params
     - trainer_params
@@ -77,10 +77,10 @@ lr#maskgit-lr:
   tags:
     - High Impact
 
-gpu_device_id:
-  type: number
-  label: GPU idx
-  min: 0
+#gpu_device_id:
+#  type: number
+#  label: GPU idx
+#  min: 0
 
 seq_len:
   type: number
@@ -152,13 +152,13 @@ dataset:
   label: Training hyper-parameters
   fields:
     - batch_sizes
-    - dataset_name
+#    - dataset_name
 
-dataset_name:
-  type: text
-  label: Dataset name
-  tags:
-    - Low Impact
+#dataset_name:
+#  type: text
+#  label: Dataset name
+#  tags:
+#    - Low Impact
 
 
 batch_sizes:
@@ -186,7 +186,7 @@ ts:
   fields:
     - static_id
     - other_static_columns
-    - sortby
+#    - sortby
 
 #col name of static_id should be a single string, thus shouldn't use the "multi" key here
 static_id:
@@ -207,18 +207,18 @@ other_static_columns:
     - ./static_id
   tags:
     - High Impact
-sortby:
-  type: select
-  options: columns
-  label: Sort by this column (leave it blank if not applicable)
-  mutuallyExclusiveFields:
-    - ./static_id
-  parseEmptyAsNull: True
-  tags:
-    - High Impact
-  documentation: |
-    The column featuring the timeline so that the time-series can be sorted by time. For example, the transaction
-    date-time would be the sort by column for transaction records table.
+#sortby:
+#  type: select
+#  options: columns
+#  label: Sort by this column (leave it blank if not applicable)
+#  mutuallyExclusiveFields:
+#    - ./static_id
+#  parseEmptyAsNull: True
+#  tags:
+#    - High Impact
+#  documentation: |
+#    The column featuring the timeline so that the time-series can be sorted by time. For example, the transaction
+#    date-time would be the sort by column for transaction records table.
 
 single:
   type: object
