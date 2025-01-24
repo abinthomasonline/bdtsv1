@@ -185,7 +185,7 @@ def warmup(args: argparse.Namespace):
     df = pd.read_csv(source_data)
 
     # Creating a dataframe with 90% values of original dataframe
-    train_set = df.sample(frac=0.9)
+    train_set = df.sample(frac=0.9).sort_index()
 
     # Creating dataframe with rest of the 10% values
     val_set = df.drop(train_set.index)
@@ -217,33 +217,40 @@ def preprocess(args: argparse.Namespace):
     # Data transformation config for single table
     transformer_single_args = data_config_args['single']
     static_id = transformer_ts_args['static_id']
-    sortby = transformer_ts_args['sortby']
+    sortby = transformer_ts_args['sortby'] if transformer_ts_args['sortby'] else []
     other_static_columns = transformer_ts_args['other_static_columns']
     # Time series data pipeline
-    data = load_data(data, **transformer_ts_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
-    if "data_format_args" in transformer_ts_args:
-        learn_args.pop("data_format_args")
+    data = load_data(data, **transformer_single_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    # if "data_format_args" in transformer_ts_args:
+    #     learn_args.pop("data_format_args")
     if "data_format_args" in transformer_single_args:
         learn_single_args.pop("data_format_args")
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
-    transformer = TimeSeriesTransformer.make(**transformer_ts_args)
-    transformer.fit(data)
+    data_ts = data[[c for c in data.columns if c not in other_static_columns and c not in static_id and c not in sortby]]
+    # transformer = TimeSeriesTransformer.make(**transformer_ts_args)
+    # transformer.fit(data)
+    transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
+    TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
+    if "data_format_args" in transformer_single_args:
+        transformer_single_args.pop("data_format_args")
+
     transformer_single = TableTransformer.make(**transformer_single_args)
     transformer_single.fit(data_static_cond)
     static_cond_dim = transformer_single.tensorized_dim
-    augmented = transformer.transform(data, end_action="augment") # can change action to "clean/standarize" to handle missing values in TS data by sampling from existing values
-    transformed_single = transformer_single.transform(data_static_cond.drop_duplicates(), start_action='drop',
-                                                      end_action='tensorize')
-    temporal_df = augmented.temporal.obj.copy()
-    temporal_df["betterdata_g_index"] = [x for x, in augmented.temporal.group_names]
-    static = transformed_single.copy()
-    static.columns = ["&".join(c) for c in static.columns]
-    static["betterdata_g_index"] = data[static_id].astype(str)
-    merged = temporal_df.merge(static, on="betterdata_g_index", how="inner")
-    print(temporal_df.columns.tolist(), other_static_columns)
-    temporal_columns = [c for c in data.columns if c not in other_static_columns and c != static_id and c != sortby]
-    temporal_columns = [c for c in temporal_df.columns if any(c.startswith(cc + " |||") for cc in temporal_columns)]
-    df_final = merged[static.columns.tolist() + temporal_columns].drop(columns=["betterdata_g_index"])
+    # augmented = transformer.transform(data, end_action="augment") # can change action to "clean/standarize" to handle missing values in TS data by sampling from existing values
+    transformed_single = transformer_single.transform(data_static_cond, start_action='drop', end_action='tensorize')
+    transformed_single = transformed_single.set_axis(["&".join(c) for c in transformed_single.columns], axis=1)
+    df_final = pd.concat([transformed_single, data_ts], axis=1)
+    # temporal_df = augmented.temporal.obj.copy()
+    # temporal_df["betterdata_g_index"] = [x for x, in augmented.temporal.group_names]
+    # static = transformed_single.copy()
+    # static.columns = ["&".join(c) for c in static.columns]
+    # static["betterdata_g_index"] = data[static_id].astype(str)
+    # merged = temporal_df.merge(static, on="betterdata_g_index", how="inner")
+    # print(temporal_df.columns.tolist(), other_static_columns)
+    # temporal_columns = [c for c in data.columns if c not in other_static_columns and c != static_id and c != sortby]
+    # temporal_columns = [c for c in temporal_df.columns if any(c.startswith(cc + " |||") for cc in temporal_columns)]
+    # df_final = merged[static.columns.tolist() + temporal_columns].drop(columns=["betterdata_g_index"])
 
     # save transformed data
     if args.if_val:
