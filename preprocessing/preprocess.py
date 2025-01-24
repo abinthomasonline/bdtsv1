@@ -47,6 +47,9 @@ class DatasetImporterCustom(object):
         if train_data_path:
             df_train = pd.read_csv(train_data_path, skiprows=1, header=None)
             df_train = df_train.astype('float32')
+            row_count, col_count = df_train.shape
+            if row_count % seq_len != 0:
+                raise Exception("Data pipeline transformation failed: Number of rows does not divide sequence length")
             self.TS_train = df_train.iloc[:, static_cond_dim:].values # (b n_features/n_channels)
             self.SC_train = df_train.iloc[:, 0:static_cond_dim].values # (b static_cond_dim)
             # Transfer TS_train to (b c l)
