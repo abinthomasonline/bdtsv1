@@ -226,7 +226,7 @@ def preprocess(args: argparse.Namespace):
     if "data_format_args" in transformer_single_args:
         learn_single_args.pop("data_format_args")
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
-    transformer = TimeSeriesTransformer.make(**transformer_args)
+    transformer = TimeSeriesTransformer.make(**transformer_ts_args)
     transformer.fit(data)
     transformer_single = TableTransformer.make(**transformer_single_args)
     transformer_single.fit(data_static_cond)
