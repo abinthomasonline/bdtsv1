@@ -1,11 +1,11 @@
 #DATA_PATH = "datasets/source_train.csv" # source dataset before preprocessing, csv file
-DP_TRAIN_DATA_PATH="datasets/dp_train.csv" # training dataset before data pipeline, must keep the exact path
-DP_VAL_DATA_PATH="datasets/dp_val.csv" #  validation dataset before data pipeline, must keep the exact path
-DP_STATIC_COND_PATH="datasets/dp_condition.csv" # condition dataset before data pipeline, must keep the exact path
-TRAIN_DATA_PATH = "datasets/train.csv" # training dataset for training, processed after data pipeline, must keep the exact path
-VAL_DATA_PATH = "datasets/val.csv" # validation dataset for training, processed after data pipeline, must keep the exact path
+DP_TRAIN_DATA_PATH="./datasets/dp_train.csv" # training dataset before data pipeline, must keep the exact path
+DP_VAL_DATA_PATH="./datasets/dp_val.csv" #  validation dataset before data pipeline, must keep the exact path
+DP_STATIC_COND_PATH="./datasets/dp_condition.csv" # condition dataset before data pipeline, must keep the exact path
+TRAIN_DATA_PATH = "./datasets/train.csv" # training dataset for training, processed after data pipeline, must keep the exact path
+VAL_DATA_PATH = "./datasets/val.csv" # validation dataset for training, processed after data pipeline, must keep the exact path
 STATIC_COND_PATH = "./datasets/condition.csv" # synthetic conditions for TS data generation, processed after data pipeline, must keep the exact path
-DATA_SAVE_PATH = "datasets/"
+DATA_SAVE_PATH = "./datasets/"
 DATA_POLICY_PATH="./configs/data/data_config.json"# 1a config file
 OUTPUT_PATH="./out"# output directory
 DATA_CONFIG_PATH="${OUTPUT_PATH}/data-config.json"  # learned and edited 1b config file
