@@ -222,7 +222,7 @@ def preprocess(args: argparse.Namespace):
     # Time series data pipeline
     data = load_data(data, **transformer_single_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
     # if "data_format_args" in transformer_ts_args:
-    #     learn_args.pop("data_format_args")
+    #     transformer_ts_args.pop("data_format_args")
     if "data_format_args" in transformer_single_args:
         transformer_single_args.pop("data_format_args")
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
