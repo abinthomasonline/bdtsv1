@@ -53,8 +53,8 @@ def prepare_args() -> argparse.Namespace:
     preprocess_parser.add_argument("--data_path", "-d", required=True)
     preprocess_parser.add_argument("--data_config", "-p", type=str, default="./out/ts_data_config_learn.json")
     preprocess_parser.add_argument("--model_config", "-m", default="./configs/model/config.json")
-    preprocess_parser.add_argument("--if_val", "-v", default=False)
-    preprocess_parser.add_argument("--if_cond", "-c", default=False)
+    preprocess_parser.add_argument("--if_val", "-v", action='store_true', default=False)
+    preprocess_parser.add_argument("--if_cond", "-c", action='store_true', default=False)
     preprocess_parser.add_argument("--output_path", "-o", default="./datasets/")
 
 
