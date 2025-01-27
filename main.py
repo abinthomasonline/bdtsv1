@@ -60,14 +60,14 @@ def prepare_args() -> argparse.Namespace:
 
     # Define the args related to model training
     train_parser = subparsers.add_parser("train")
-    train_parser.add_argument("--data_path", "-d", default="./datasets/train.csv", required=True)
+    train_parser.add_argument("--train_data_path", "-d", default="./datasets/train.csv", required=True)
     train_parser.add_argument("--test_data_path", "-v", required=True)
     train_parser.add_argument("--model_config", "-m", type=str, default="./configs/model/config.json")
     # train_parser.add_argument("--static_cond_dim", "-scd", required=True)
 
     # Define the args related to synthetic data generation (sampling)
     sample_parser = subparsers.add_parser("sample")
-    sample_parser.add_argument("--static-cond-path", "-sd", required=True)
+    sample_parser.add_argument("--static_cond_path", "-sd", required=True)
     sample_parser.add_argument("--model_config", "-m", type=str, default="./configs/model/config.json")
     sample_parser.add_argument("--output_path", "-o", required=True)
     return parser.parse_args()
