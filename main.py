@@ -253,12 +253,13 @@ def preprocess(args: argparse.Namespace):
     # df_final = merged[static.columns.tolist() + temporal_columns].drop(columns=["betterdata_g_index"])
 
     # save transformed data
-    if args.if_val:
-        data_saving_path = args.output_path + 'val.csv'
-    elif args.if_cond:
-        data_saving_path = args.output_path + 'condition.csv'
-    else:
+    if not args.if_val and not args.if_cond:
         data_saving_path = args.output_path + 'train.csv'
+    if args.if_cond and not args.if_val:
+        data_saving_path = args.output_path + 'condition.csv'
+    if args.if_val and not arg.if_cond:
+        data_saving_path = args.output_path + 'val.csv'
+
     df_final.to_csv(data_saving_path, index=False)
 
     # update static_cond_dim in model_config.json
