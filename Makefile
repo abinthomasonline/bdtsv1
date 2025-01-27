@@ -36,8 +36,8 @@ train_ts:
 	@mkdir -p $(MODEL_OUTPUT_PATH)
 	@python main.py -t -l $(LOG_LEVEL) arf -d $(DATA_PATH) -p $(DATA_CONFIG_PATH) -m $(MODEL_CONFIG_PATH) -o $(DATA_SAVE_PATH)
 	@python main.py -t -l $(LOG_LEVEL) preprocess -d $(DP_TRAIN_DATA_PATH) -p $(DATA_CONFIG_PATH) -m $(MODEL_CONFIG_PATH) -o $(DATA_SAVE_PATH)
-	@python main.py -t -l $(LOG_LEVEL) preprocess -v -d $(DP_VAL_DATA_PATH) -p$(DATA_CONFIG_PATH) -o $(DATA_SAVE_PATH)
-	@python main.py -t -l $(LOG_LEVEL) preprocess -c -d $(DP_STATIC_COND_PATH) -p$(DATA_CONFIG_PATH) -o $(DATA_SAVE_PATH)
+	@python main.py -t -l $(LOG_LEVEL) preprocess --if_val -d $(DP_VAL_DATA_PATH) -p$(DATA_CONFIG_PATH) -o $(DATA_SAVE_PATH)
+	@python main.py -t -l $(LOG_LEVEL) preprocess --if_cond -d $(DP_STATIC_COND_PATH) -p$(DATA_CONFIG_PATH) -o $(DATA_SAVE_PATH)
 	@python3 main.py -t -l $(LOG_LEVEL) train -d $(TRAIN_DATA_PATH) -v $(VAL_DATA_PATH) -m $(MODEL_CONFIG_PATH)
 
 wrapup_train_ts:
