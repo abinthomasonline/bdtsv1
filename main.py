@@ -229,7 +229,7 @@ def preprocess(args: argparse.Namespace):
     data_ts = data[[c for c in data.columns if c not in other_static_columns and c not in static_id and c not in sortby]]
     # transformer = TimeSeriesTransformer.make(**transformer_ts_args)
     # transformer.fit(data)
-    transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
+    transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **transformer_single_args)
     TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
     if "data_format_args" in transformer_single_args:
         transformer_single_args.pop("data_format_args")
