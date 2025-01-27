@@ -257,7 +257,7 @@ def preprocess(args: argparse.Namespace):
         data_saving_path = args.output_path + 'train.csv'
     if args.if_cond and not args.if_val:
         data_saving_path = args.output_path + 'condition.csv'
-    if args.if_val and not arg.if_cond:
+    if args.if_val and not args.if_cond:
         data_saving_path = args.output_path + 'val.csv'
 
     df_final.to_csv(data_saving_path, index=False)
