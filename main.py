@@ -29,7 +29,7 @@ def prepare_args() -> argparse.Namespace:
     parser.add_argument("--log-level", "-l", type=str, default="INFO",
                         choices=["TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "FATAL"])
     parser.add_argument("--time", "-t", action="store_true")
-    parser.add_argument("--output_path", "-o", action="store_true", default="./out/")
+    parser.add_argument("--output_path", "-o", type=str, default="./out/")
     subparsers = parser.add_subparsers(dest="op")
 
     prepare_parser = subparsers.add_parser("prepare")
