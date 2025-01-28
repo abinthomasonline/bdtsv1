@@ -98,8 +98,8 @@ class DatasetImporterCustom(object):
 
         if train_data_path:
             np.nan_to_num(self.TS_train, copy=False)
-            config['dataset']['mean'] = self.mean
-            config['dataset']['std'] = self.std
+            config['dataset']['mean'] = float(self.mean)
+            config['dataset']['std'] = float(self.std)
         if test_data_path:
             np.nan_to_num(self.TS_test, copy=False)
 
