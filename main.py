@@ -70,7 +70,7 @@ def prepare_args() -> argparse.Namespace:
     sample_parser = subparsers.add_parser("sample")
     sample_parser.add_argument("--static_cond_path", "-sd", required=True)
     sample_parser.add_argument("--model_config", "-m", type=str, default="./configs/model/config.json")
-    sample_parser.add_argument("--output_path", "-o", required=True)
+    sample_parser.add_argument("--output_path", "-o", required=True, default="./out/")
     return parser.parse_args()
 
 
