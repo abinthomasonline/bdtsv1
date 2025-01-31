@@ -330,7 +330,7 @@ def generate(args: argparse.Namespace):
         model_config = json.load(f)
 
     config = {}
-    for d in (model_config['general'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+    for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
     dataset_name = config['dataset']['dataset_name']
     batch_size = config['evaluation']['batch_size']
     static_cond_dim = config['static_cond_dim']
