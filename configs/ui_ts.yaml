@@ -228,15 +228,15 @@ single:
 #    - na_equivalences
 
 
-drop_columns:
-  type: select
-  multi: true
-  options: columns
-  label: Drop the columns we currently do not support (e.g., emails)
-  mutuallyExclusiveFields:
-    - ./static_id
-  tags:
-    - High Impact
+#drop_columns:
+#  type: select
+#  multi: true
+#  options: columns
+#  label: Drop the columns we currently do not support (e.g., emails)
+#  mutuallyExclusiveFields:
+#    - ./static_id
+#  tags:
+#    - High Impact
 
 #na_equivalences:
 #  type: text
