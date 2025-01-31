@@ -23,6 +23,8 @@ def source_to_data_pipeline(source_data_path, seq_len, static_id, sortby, other_
     ts = ts.to_numpy()
     # print(extracted_ts_col_names)
     print("temporal data shape: {}, seq_len is: {}".format(ts.shape, seq_len))
+    if ts.shape[1] == 0:
+        raise Exception("sequence length of TS data could not be 0")
     if ts.shape[1] % seq_len != 0:
         raise Exception("length of time series data must be divisble by seq_len")
     ts = np.reshape(ts, (ts.shape[0], seq_len, ts.shape[1] // seq_len))
