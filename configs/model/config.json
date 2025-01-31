@@ -1,23 +1,25 @@
 {
   "model": {
     "encoder": {
-      "init_dim": 4,
-      "hid_dim": 128,
-      "n_resnet_blocks": 2,
+      "init_dim": 8,
+      "hid_dim": 256,
+      "n_resnet_blocks": 4,
       "downsampled_width": {
         "lf": 8,
         "hf": 32
       }
     },
     "decoder": {
-      "n_resnet_blocks": 2
+      "n_resnet_blocks": 4
     },
     "VQ-VAE": {
       "n_fft": 4,
       "codebook_sizes": {
-        "lf": 32,
-        "hf": 32
-      }
+        "lf": 1024,
+        "hf": 1024
+      },
+      "kmeans_init": true,
+      "codebook_dim": 32
     },
     "MaskGIT": {
       "choice_temperatures": {
@@ -29,9 +31,9 @@
         "hf": 1
       },
       "prior_model_l": {
-        "hidden_dim": 128,
-        "n_layers": 4,
-        "heads": 2,
+        "hidden_dim": 384,
+        "n_layers": 8,
+        "heads": 8,
         "ff_mult": 1,
         "use_rmsnorm": true,
         "p_unconditional": 0.2,
@@ -39,9 +41,9 @@
         "emb_dropout": 0.3
       },
       "prior_model_h": {
-        "hidden_dim": 32,
-        "n_layers": 1,
-        "heads": 1,
+        "hidden_dim": 128,
+        "n_layers": 4,
+        "heads": 4,
         "ff_mult": 1,
         "use_rmsnorm": true,
         "p_unconditional": 0.2,
@@ -75,8 +77,8 @@
     "static_cond_dim": 6,
     "seq_len": 143,
     "exp_params": {
-      "lr": 0.001,
-      "linear_warmup_rate": 0.1
+      "lr": 0.005,
+      "linear_warmup_rate": 0.05
     },
     "trainer_params": {
       "max_steps": {
@@ -85,9 +87,9 @@
         "stage_fid_enhancer": 50000
       },
       "val_check_interval": {
-        "stage1": 5000,
-        "stage2": 10000,
-        "stage_fid_enhancer": 2500
+        "stage1": 1000,
+        "stage2": 1000,
+        "stage_fid_enhancer": 1000
       }
     }
   },
@@ -101,8 +103,8 @@
       "dataset_name": "customized",
       "batch_sizes": {
         "stage1": 32,
-        "stage2": 16,
-        "stage_fid_enhancer": 16
+        "stage2": 32,
+        "stage_fid_enhancer": 32
       },
       "num_workers": 0
     }
