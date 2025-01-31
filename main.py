@@ -80,32 +80,34 @@ def prepare(args: argparse.Namespace):
     with open(learn_args_path, "r") as f:
         data_config_args = json.load(f)
 
-    learn_ts_args = data_config_args['ts']
-    learn_single_args = data_config_args['single']
-    other_static_columns = learn_ts_args['other_static_columns']
+    learned_args = data_config_args
+
+    # learn_ts_args = data_config_args['ts']
+    # learn_single_args = data_config_args['single']
+    # other_static_columns = learn_ts_args['other_static_columns']
 
     # Define the proper data pipeline for your model
-    TimeSeriesTransformer.validate_kwargs(data, learn_ts_args, learning=True)
-    TableTransformer.validate_kwargs(data, learn_single_args, learning=True)
-    data = load_data(data, **learn_ts_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
-    if "data_format_args" in learn_ts_args:
-        learn_ts_args.pop("data_format_args")
-    if "data_format_args" in learn_single_args:
-        learn_single_args.pop("data_format_args")
-    data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
-    # Learn configs
-    transformer_ts_args = TimeSeriesTransformer.learn_args(data, json_compatible=True, **learn_ts_args)
-    transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
-    TimeSeriesTransformer.validate_kwargs(data, transformer_ts_args)
-    TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
-    if "data_format_args" in transformer_ts_args:
-        transformer_ts_args.pop("data_format_args")
-    if "data_format_args" in transformer_single_args:
-        transformer_single_args.pop("data_format_args")
-
-    learned_args = {}
-    learned_args['ts'] = transformer_ts_args
-    learned_args['single'] = transformer_single_args
+    # TimeSeriesTransformer.validate_kwargs(data, learn_ts_args, learning=True)
+    # TableTransformer.validate_kwargs(data, learn_single_args, learning=True)
+    # data = load_data(data, **learn_ts_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    # if "data_format_args" in learn_ts_args:
+    #     learn_ts_args.pop("data_format_args")
+    # if "data_format_args" in learn_single_args:
+    #     learn_single_args.pop("data_format_args")
+    # data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
+    # # Learn configs
+    # transformer_ts_args = TimeSeriesTransformer.learn_args(data, json_compatible=True, **learn_ts_args)
+    # transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **learn_single_args)
+    # TimeSeriesTransformer.validate_kwargs(data, transformer_ts_args)
+    # TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
+    # if "data_format_args" in transformer_ts_args:
+    #     transformer_ts_args.pop("data_format_args")
+    # if "data_format_args" in transformer_single_args:
+    #     transformer_single_args.pop("data_format_args")
+    #
+    # learned_args = {}
+    # learned_args['ts'] = transformer_ts_args
+    # learned_args['single'] = transformer_single_args
 
     directory = os.path.dirname(args.output_path)
     # Check if the directory exists
@@ -158,8 +160,17 @@ def warmup(args: argparse.Namespace):
     sortby = transformer_ts_args['sortby']
     other_static_columns = transformer_ts_args['other_static_columns']
 
-    data = load_data(data, **transformer_single_args.get("data_format_args", {}))
+
+    data = load_data(data, **transformer_ts_args.get("data_format_args", {}))
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]# Skip if `data` is `pd.DataFrame` already
+    if "data_format_args" in transformer_ts_args:
+        transformer_ts_args.pop("data_format_args")
+    if "data_format_args" in transformer_single_args:
+        transformer_single_args.pop("data_format_args")
+
+    TableTransformer.validate_kwargs(data_static_cond, transformer_single_args, learning=True)
+    transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **transformer_single_args)
+    TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
     if "data_format_args" in transformer_single_args:
         transformer_single_args.pop("data_format_args")
     transformer = TableTransformer.make(**transformer_single_args)
@@ -221,15 +232,18 @@ def preprocess(args: argparse.Namespace):
     sortby = transformer_ts_args['sortby'] if transformer_ts_args['sortby'] else []
     other_static_columns = transformer_ts_args['other_static_columns']
     # Time series data pipeline
-    data = load_data(data, **transformer_single_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
-    # if "data_format_args" in transformer_ts_args:
-    #     transformer_ts_args.pop("data_format_args")
+    data = load_data(data, **transformer_ts_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    if "data_format_args" in transformer_ts_args:
+        transformer_ts_args.pop("data_format_args")
     if "data_format_args" in transformer_single_args:
         transformer_single_args.pop("data_format_args")
+
+    # divide dataset into static data and ts data
     data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
     data_ts = data[[c for c in data.columns if c not in other_static_columns and c not in static_id and c not in sortby]]
     # transformer = TimeSeriesTransformer.make(**transformer_ts_args)
     # transformer.fit(data)
+    TableTransformer.validate_kwargs(data_static_cond, transformer_single_args, learning=True)
     transformer_single_args = TableTransformer.learn_args(data_static_cond, json_compatible=True, **transformer_single_args)
     TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
     if "data_format_args" in transformer_single_args:
