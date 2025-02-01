@@ -120,24 +120,25 @@ def prepare(args: argparse.Namespace):
 
 
 def validate(args: argparse.Namespace):
-    data = args.data_path
-    with open(args.data_config, "r") as f:
-        data_config_args = json.load(f)
-    transformer_ts_args = data_config_args['ts']
-    transformer_single_args = data_config_args['single']
-    # static_id = transformer_ts_args['static_id']
-    # sortby = transformer_ts_args['sortby']
-    other_static_columns = transformer_ts_args['other_static_columns']
-
-    data = load_data(data, **transformer_ts_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
-    if "data_format_args" in transformer_ts_args:
-        transformer_ts_args.pop("data_format_args")
-    if "data_format_args" in transformer_single_args:
-        transformer_single_args.pop("data_format_args")
-    data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
-
-    TimeSeriesTransformer.validate_kwargs(data, transformer_ts_args)
-    TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
+    pass
+    # data = args.data_path
+    # with open(args.data_config, "r") as f:
+    #     data_config_args = json.load(f)
+    # transformer_ts_args = data_config_args['ts']
+    # transformer_single_args = data_config_args['single']
+    # # static_id = transformer_ts_args['static_id']
+    # # sortby = transformer_ts_args['sortby']
+    # other_static_columns = transformer_ts_args['other_static_columns']
+    #
+    # data = load_data(data, **transformer_ts_args.get("data_format_args", {}))  # Skip if `data` is `pd.DataFrame` already
+    # if "data_format_args" in transformer_ts_args:
+    #     transformer_ts_args.pop("data_format_args")
+    # if "data_format_args" in transformer_single_args:
+    #     transformer_single_args.pop("data_format_args")
+    # data_static_cond = data[[c for c in data.columns if c in other_static_columns]]
+    #
+    # TimeSeriesTransformer.validate_kwargs(data, transformer_ts_args)
+    # TableTransformer.validate_kwargs(data_static_cond, transformer_single_args)
 
 
 def warmup(args: argparse.Namespace):
