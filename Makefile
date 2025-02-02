@@ -38,7 +38,7 @@ train_ts:
 	@python main.py -t -l $(LOG_LEVEL) preprocess -d $(DP_TRAIN_DATA_PATH) -p $(DATA_CONFIG_PATH) -m $(MODEL_CONFIG_PATH) -o $(DATA_SAVE_PATH)
 	@python main.py -t -l $(LOG_LEVEL) preprocess -d $(DP_VAL_DATA_PATH) -p$(DATA_CONFIG_PATH) -o $(DATA_SAVE_PATH) --if_val
 	@python main.py -t -l $(LOG_LEVEL) preprocess -d $(DP_STATIC_COND_PATH) -p$(DATA_CONFIG_PATH) -o $(DATA_SAVE_PATH) --if_cond
-	@python3 main.py -t -l $(LOG_LEVEL) train -d $(TRAIN_DATA_PATH) -v $(VAL_DATA_PATH)
+	@python3 main.py -t -l $(LOG_LEVEL) train -d $(TRAIN_DATA_PATH) -v $(VAL_DATA_PATH) -m $(MODEL_CONFIG_PATH)
 
 wrapup_train_ts:
 	@cp ./saved_models/* $(MODEL_OUTPUT_PATH)
@@ -46,7 +46,7 @@ wrapup_train_ts:
 
 sample_ts:
 	@mkdir -p $(GEN_DATA_OUTPUT_PATH)
-	@python3 main.py -t -l $(LOG_LEVEL) sample -sd $(STATIC_COND_PATH)
+	@python3 main.py -t -l $(LOG_LEVEL) sample -sd $(STATIC_COND_PATH) -m $(MODEL_CONFIG_PATH)
 
 wrapup_sample_ts:
 	@mv ./synthetic_data/* $(GEN_DATA_OUTPUT_PATH)
