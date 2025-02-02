@@ -341,8 +341,12 @@ def train(args: argparse.Namespace):
 
 
 def generate(args: argparse.Namespace):
-    with open(args.model_config, "r") as f:
+    # with open(args.model_config, "r") as f:
+    #     model_config = json.load(f)
+    #     f.close()
+    with open("./configs/model/config.json", "r") as f:
         model_config = json.load(f)
+        f.close()
 
     config = {}
     for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
