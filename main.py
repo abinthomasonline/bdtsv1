@@ -279,8 +279,13 @@ def preprocess(args: argparse.Namespace):
     df_final.to_csv(data_saving_path, index=False)
 
     # update static_cond_dim in model_config.json
-    new_model_config_save_path = args.model_config
-    with open(args.model_config, "r") as f:
+    # new_model_config_save_path = args.model_config
+    # with open(args.model_config, "r") as f:
+    #     model_config = json.load(f)
+    #     f.close()
+
+    new_model_config_save_path = "./configs/model/config.json"
+    with open(new_model_config_save_path, "r") as f:
         model_config = json.load(f)
         f.close()
 
@@ -295,8 +300,13 @@ def preprocess(args: argparse.Namespace):
 
 def train(args: argparse.Namespace):
     # load training configs for Stage1
-    new_model_config_save_path = args.model_config
-    with open(args.model_config, "r") as f:
+    # new_model_config_save_path = args.model_config
+    # with open(args.model_config, "r") as f:
+    #     model_config = json.load(f)
+    #     f.close()
+
+    new_model_config_save_path = "./configs/model/config.json"
+    with open(new_model_config_save_path, "r") as f:
         model_config = json.load(f)
         f.close()
     config = {}
@@ -320,7 +330,9 @@ def train(args: argparse.Namespace):
         json.dump(model_config, f)
 
     # load training configs for Stage2
-    with open(args.model_config, "r") as f:
+    # with open(args.model_config, "r") as f:
+    #     model_config = json.load(f)
+    with open(new_model_config_save_path, "r") as f:
         model_config = json.load(f)
     config = {}
     for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
