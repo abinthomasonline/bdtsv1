@@ -6,6 +6,9 @@ dataset:
     stage2: 16
     stage_fid_enhancer: 16
   num_workers: 0
+  num_features: 1
+  mean: 1
+  std: 1
 
 gpu_device_id: 1
 
@@ -19,8 +22,8 @@ exp_params:
 
 trainer_params:
   max_steps:
-    stage1: 50000
-    stage2: 200000
+    stage1: 1
+    stage2: 1
     stage_fid_enhancer: 50000
   val_check_interval:
     stage1: 5000

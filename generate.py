@@ -97,9 +97,9 @@ if __name__ == '__main__':
     seq_len = config['seq_len']
     gpu_device_ind = config['gpu_device_id']
     dataset_importer = DatasetImporterCustom(config=config, train_data_path=None,
-                                             test_data_path=args.static_cond_path, static_cond_dim=static_cond_dim,
+                                             test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
-    test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['test']]
+    test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
     static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
     # print(static_conditions.shape)
     # generate synthetic data
