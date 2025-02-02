@@ -354,7 +354,7 @@ def generate(args: argparse.Namespace):
     dataset_importer = DatasetImporterCustom(config=config, train_data_path=None,
                                              test_data_path=args.static_cond_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
-    test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind) for kind in ['test']]
+    test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
     static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
     # generate synthetic data
     evaluate(config, dataset_name, static_cond_dim, dataset_importer, static_conditions, train_data_loader,
