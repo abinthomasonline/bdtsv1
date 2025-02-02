@@ -86,7 +86,7 @@ python stage2.py --config configs/config.yaml --train_data_path datasets/CustomD
 
 ## Generation
 ```
-python generate.py --config configs/config.yaml --train_data_path datasets/CustomDataset/Walmart_train.csv --test_data_path datasets/CustomDataset/Walmart_test.csv
+python generate.py --config configs/config.yaml --test_data_path datasets/CustomDataset/Walmart_test.csv
 ```
 
 ## Evaluation
