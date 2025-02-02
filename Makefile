@@ -10,7 +10,8 @@ DATA_POLICY_PATH="./configs/data/data_config.json"# 1a config file
 OUTPUT_PATH="./out"# output directory
 DATA_CONFIG_PATH="${OUTPUT_PATH}/data-config.json"  # learned and edited 1b config file
 #DATA_CONFIG_PATH_2A=$(OUTPUT_PATH)/ts_data_config_learn.json# learned and edited 1b config file
-MODEL_CONFIG_PATH="./configs/model/config.json"# model parameters
+MODEL_CONFIG_PATH="./configs/model/config.json" # model config
+UPDATED_MODEL_CONFIG_PATH="./out/final_model_config.json" # model config with updated parameters after training
 # LOG_LEVEL="INFO"
 # MODE=validate1b# OR "validate2b"  #validate1b for 4A, validate2b for 4B step.
 MODEL_OUTPUT_PATH="$(OUTPUT_PATH)/model"
@@ -46,7 +47,7 @@ wrapup_train_ts:
 
 sample_ts:
 	@mkdir -p $(GEN_DATA_OUTPUT_PATH)
-	@python3 main.py -t -l $(LOG_LEVEL) sample -sd $(STATIC_COND_PATH) -m $(MODEL_CONFIG_PATH)
+	@python3 main.py -t -l $(LOG_LEVEL) sample -sd $(STATIC_COND_PATH) -m $(UPDATED_MODEL_CONFIG_PATH)
 
 wrapup_sample_ts:
 	@mv ./synthetic_data/* $(GEN_DATA_OUTPUT_PATH)
