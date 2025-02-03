@@ -1,4 +1,4 @@
-# time-series-synthetic
+# TS-V1 (multi-variate conditional TS generation)
 
 
 ## Contents
