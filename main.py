@@ -383,7 +383,7 @@ def generate(args: argparse.Namespace):
 
     # concatenate conditions and TS data and convert them back to the source format
     cond_file_path = "./datasets/source_condition.csv"
-    ts_file_path = os.path.join(f'./synthetic_data', f'synthetic-{dataset_name}.csv')
+    ts_file_path = os.path.join(f'./synthetic_data', f'ts-synthetic-{dataset_name}.csv')
     df_condition = pd.read_csv(cond_file_path)
     df_ts = pd.read_csv(ts_file_path)
     df_syn = pd.concat([df_condition, df_ts], axis=1)
