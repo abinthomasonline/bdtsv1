@@ -42,7 +42,7 @@ def evaluate(config: dict,
              dataset_name: str,
              static_cond_dim: int,
              static_conditions,
-             gpu_device_idx,
+             gpu_device_ind,
              use_fidelity_enhancer:bool,
              feature_extractor_type:str,
              use_custom_dataset:bool=False,
@@ -62,12 +62,22 @@ def evaluate(config: dict,
     wandb.init(project='TimeVQVAE-evaluation', 
                config={**config, 'dataset_name': dataset_name, 'static_cond_dim': static_cond_dim, 'use_fidelity_enhancer':use_fidelity_enhancer, 'feature_extractor_type':feature_extractor_type})
 
+    # Check if GPU is available
+    if not torch.cuda.is_available():
+        print('GPU is not available.')
+        # num_cpus = multiprocessing.cpu_count()
+        num_cpus = 1
+        print(f'using {num_cpus} CPUs..')
+        device = 'cpu'
+    else:
+        device = gpu_device_ind
+
     # conditional sampling
     # print('evaluating...')
-    evaluation = Evaluation(dataset_name, static_cond_dim, in_channels, input_length, gpu_device_idx, config,
+    evaluation = Evaluation(dataset_name, static_cond_dim, in_channels, input_length, device, config,
                             use_fidelity_enhancer=use_fidelity_enhancer,
                             feature_extractor_type=feature_extractor_type,
-                            use_custom_dataset=use_custom_dataset).to(gpu_device_idx)
+                            use_custom_dataset=use_custom_dataset).to(device)
     (_, _, xhat), xhat_R = evaluation.sample(static_conditions.shape[0], static_conditions)
     x_new = np.transpose(xhat, (0, 2, 1))
     if not os.path.isdir(get_root_dir().joinpath('synthetic_data')):
