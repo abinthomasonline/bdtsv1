@@ -90,11 +90,13 @@ class DatasetImporterCustom(object):
         # # self.SC_train, self.SC_test = np.repeat(self.SC_train, n_channels, axis=1), np.repeat(self.SC_test, n_channels, axis=1)
 
         self.mean, self.std = 1., 1.
-        if data_scaling and train_data_path and test_data_path:
-            self.mean = np.nanmean(self.TS_train, axis=(0, 2))[None, :, None]  # (1 c 1)
-            self.std = np.nanstd(self.TS_train, axis=(0, 2))[None, :, None]  # (1 c 1)
-            self.TS_train = (self.TS_train - self.mean) / self.std  # (b c l)
-            self.TS_test = (self.TS_test - self.mean) / self.std  # (b c l)
+        if data_scaling:
+            if train_data_path:
+                self.mean = np.nanmean(self.TS_train, axis=(0, 2))[None, :, None]  # (1 c 1)
+                self.std = np.nanstd(self.TS_train, axis=(0, 2))[None, :, None]  # (1 c 1)
+                self.TS_train = (self.TS_train - self.mean) / self.std  # (b c l)
+            if test_data_path:
+                self.TS_test = (self.TS_test - self.mean) / self.std  # (b c l)
 
         if train_data_path:
             np.nan_to_num(self.TS_train, copy=False)
