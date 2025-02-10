@@ -61,8 +61,9 @@ Please refer to this [repo](https://github.com/betterdataai/data/tree/new) for d
 
 
 ## Training
-The training consists two stages. Stage1 is to train a VQVAE for discrete tokenization and Stage2 is to train a transformer model for TS generation. Args you need to pass: train_data_path, test_data_path, static_cond_dim, seq_len.
+The training consists two stages. Stage1 is to train a VQVAE for discrete tokenization and Stage2 is to train a transformer model for TS generation. Args you need to pass: train_data_path, config, test_data_path (optional).
 
+In the config file, you need to explicitly define the following keys:
 ```
 staic_cond_dim = nums of columns of static conditions after data transformation using Betterdata data pipeline
 seq_len = num of time steps in one time-series sample. E.g., sample period = 24hrs and sample interval = 1hr, then seq_len = 24
