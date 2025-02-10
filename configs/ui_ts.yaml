@@ -77,10 +77,10 @@ lr#maskgit-lr:
   tags:
     - High Impact
 
-#gpu_device_id:
-#  type: number
-#  label: GPU idx
-#  min: 1
+gpu_device_id:
+  type: number
+  label: GPU idx
+  min: 1
 
 seq_len:
   type: number
