@@ -73,7 +73,7 @@
     }
   },
   "train": {
-    "gpu_device_id": 0,
+    "gpu_device_id": 1,
     "static_cond_dim": 6,
     "seq_len": 143,
     "exp_params": {

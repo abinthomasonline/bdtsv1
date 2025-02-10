@@ -80,7 +80,7 @@ lr#maskgit-lr:
 #gpu_device_id:
 #  type: number
 #  label: GPU idx
-#  min: 0
+#  min: 1
 
 seq_len:
   type: number
