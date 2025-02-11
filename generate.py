@@ -70,7 +70,8 @@ def evaluate(config: dict,
         print(f'using {num_cpus} CPUs..')
         device = 'cpu'
     else:
-        device = gpu_device_ind
+        # device = gpu_device_ind
+        device = torch.device('cuda:0')
 
     # conditional sampling
     # print('evaluating...')
