@@ -322,8 +322,17 @@ def train(args: argparse.Namespace):
     dataset_importer = DatasetImporterCustom(config=config, train_data_path=args.train_data_path,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
-    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
-                                           for kind in ['train', 'test']]
+    if args.train_data_path and args.test_data_path:
+        train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
+                                               for kind in ['train', 'test']]
+    if args.train_data_path and not args.test_data_path:
+        train_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'train')
+        test_data_loader = None
+
+    if not args.train_data_path and args.test_data_path:
+        train_data_loader = None
+        test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
+
     train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
     model_config['data']['dataset'] = config['dataset']
     os.remove(new_model_config_save_path)
@@ -348,8 +357,17 @@ def train(args: argparse.Namespace):
     dataset_importer = DatasetImporterCustom(config=config, train_data_path=args.train_data_path,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
-    train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
-                                           for kind in ['train', 'test']]
+    if args.train_data_path and args.test_data_path:
+        train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
+                                               for kind in ['train', 'test']]
+    if args.train_data_path and not args.test_data_path:
+        train_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'train')
+        test_data_loader = None
+
+    if not args.train_data_path and args.test_data_path:
+        train_data_loader = None
+        test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
+
     train_stage2(config, dataset_name, static_cond_dim, train_data_loader, test_data_loader, gpu_device_ind,
                  feature_extractor_type='rocket', use_custom_dataset=True)
 
