@@ -94,7 +94,16 @@
     }
   },
   "generate": {
-    "evaluation": {"batch_size": 32},
+    "evaluation": {
+      "batch_size": 32,
+      "no_cuda": true,
+      "cuda_device": 0,
+      "method_list": ["C-FID", "t-SNE", "Distribution"],
+      "iter_disc": 2000,
+      "iter_pred": 5000,
+      "rnn_name": "lstm",
+      "non_ts_cols": []
+    },
     "num_rows": 5000
     },
   "data": {

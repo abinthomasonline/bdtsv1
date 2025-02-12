@@ -122,17 +122,41 @@ generate:
 
 evaluation:
   type: object
-  label: Generation batch size
+  label: Evaluation
   fields:
-    - batch_size#generation
+#    - batch_size#generation
+    - no_cuda
+    - cuda_device
+    - non_ts_cols
 
-batch_size#generation:
+
+#batch_size#generation:
+#  type: number
+#  label: Batch size
+#  min: 32
+#  tags:
+#    - Medium Impact
+
+no_cuda:
+  type: boolean
+  label: Do not use cuda for evaluation
+  tags:
+    - High Impact
+
+cuda_device:
   type: number
-  label: Batch size
-  min: 32
+  label: GPU idx for evaluation (only in cuda mode)
+  min: 0
   tags:
     - Medium Impact
 
+non_ts_cols:
+  type: select
+  multi: true
+  options: columns
+  label: Non time-series columns (all non time series columns)
+  tags:
+    - High Impact
 
 num_rows:
   type: number
