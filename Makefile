@@ -15,6 +15,7 @@ MODEL_CONFIG_PATH="./configs/model/config.json" # model config
 # MODE=validate1b# OR "validate2b"  #validate1b for 4A, validate2b for 4B step.
 MODEL_OUTPUT_PATH="$(OUTPUT_PATH)/model"
 GEN_DATA_OUTPUT_PATH="$(OUTPUT_PATH)/data"
+SYN_DATA_PATH = "$(OUTPUT_PATH)/data/synthetic_final.csv"
 # DATA_CONFIG_PATH_2B="/tmp/data_args_1a.json"  #learned 4A data config json for 4B.
 
 
@@ -52,3 +53,9 @@ wrapup_sample_ts:
 	@mv ./synthetic_data/* $(GEN_DATA_OUTPUT_PATH)
 	@echo "Sampling Completed"
 
+evaluate_ts:
+	@python3 main.py -t -l $(LOG_LEVEL) metrics -m $(MODEL_CONFIG_PATH) -rdp $(DATA_PATH) -sdp $(SYN_DATA_PATH)
+
+wrapup_evaluate_ts:
+	@mv ./Report.html $(OUTPUT_PATH)
+	@echo "Evaluation Completed"

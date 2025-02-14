@@ -22,6 +22,8 @@ from stage2 import *
 from generate import *
 from source_to_dp import source_to_data_pipeline
 
+from bdtsmetrics import bd_ts_metrics
+
 
 
 def prepare_args() -> argparse.Namespace:
@@ -71,6 +73,12 @@ def prepare_args() -> argparse.Namespace:
     sample_parser.add_argument("--static_cond_path", "-sd", required=True)
     sample_parser.add_argument("--model_config", "-m", type=str, default="./configs/model/config.json")
     sample_parser.add_argument("--output_path", "-o", required=True, default="./out/")
+
+
+    metrics_parser = subparsers.add_parser("metrics")
+    metrics_parser.add_argument("--real_data_path", "-rdp", required=True)
+    metrics_parser.add_argument("--syn_data_path", "-sdp", default="./configs/model/config.json")
+    metrics_parser.add_argument("--metric_config", "-m", default="./configs/model/config.json")
     return parser.parse_args()
 
 
@@ -408,6 +416,9 @@ def generate(args: argparse.Namespace):
     df_syn.to_csv(args.output_path + "synthetic_final.csv", index=False)
 
 
+def compute_metrics(args: argparse.Namespace):
+    my_metrics = bd_ts_metrics.tsMetrics(config=args.metric_config, real_data=args.real_data_path, syn_data=args.syn_data_path)
+    my_metrics.evaluate()
 
 
 def BetterdataLogger(name='ml_logger', console_level='INFO', mode='MLOPS'):
@@ -546,6 +557,8 @@ def main():
         train(args)
     elif args.op == "sample":
         generate(args)
+    elif args.op == "metrics":
+        compute_metrics(args)
     else:
         raise ValueError(f"Operation {args.op} is not recognized.")
     end_time = datetime.now()
