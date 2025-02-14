@@ -74,7 +74,7 @@ def prepare_args() -> argparse.Namespace:
     sample_parser.add_argument("--model_config", "-m", type=str, default="./configs/model/config.json")
     sample_parser.add_argument("--output_path", "-o", required=True, default="./out/")
 
-
+    # Define the args related to metrics evaluation (compute_metrics)
     metrics_parser = subparsers.add_parser("metrics")
     metrics_parser.add_argument("--real_data_path", "-rdp", required=True)
     metrics_parser.add_argument("--syn_data_path", "-sdp", default="./configs/model/config.json")
