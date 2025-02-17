@@ -12,6 +12,7 @@ import torch
 import wandb
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import LearningRateMonitor
+from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
@@ -64,10 +65,19 @@ def train_stage1(config: dict,
     else:
         accelerator = 'gpu'
         device = gpu_device_ind
+
+    # Define your early stopping callback
+    early_stop_callback = EarlyStopping(
+        monitor='val/loss',  # Metric to monitor; must match the name logged in validation_step
+        min_delta=0.00,  # Minimum change in the monitored quantity to qualify as an improvement
+        patience=10,  # Number of validation epochs with no improvement after which training will be stopped
+        verbose=True,
+        mode='min'  # Because we want to minimize the loss
+    )
         
     trainer = pl.Trainer(logger=wandb_logger,
                          enable_checkpointing=False,
-                         callbacks=[LearningRateMonitor(logging_interval='step')],
+                         callbacks=[LearningRateMonitor(logging_interval='step'), early_stop_callback],
                          max_steps=config['trainer_params']['max_steps']['stage1'],
                          devices=device,
                          accelerator=accelerator,
