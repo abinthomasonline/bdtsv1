@@ -102,7 +102,7 @@
       "iter_disc": 2000,
       "iter_pred": 5000,
       "rnn_name": "lstm",
-      "non_ts_cols": []
+      "num_non_ts_cols": 1
     },
     "num_rows": 5000
     },

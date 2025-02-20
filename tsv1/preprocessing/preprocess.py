@@ -9,7 +9,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
 
-# from utils import get_root_dir
+# Change this import to absolute import
+from tsv1.utils import get_root_dir
 
 def sliding_window_view(data, window_size, step=1):
     if data.ndim != 2:

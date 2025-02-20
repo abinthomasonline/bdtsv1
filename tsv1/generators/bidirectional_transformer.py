@@ -84,8 +84,12 @@ class BidirectionalTransformer(nn.Module):
         # self.class_condition_emb = nn.Embedding(n_classes + 1, in_dim)  # `+1` is for no-condition
         # add embedding for static conditions
         self.static_cond_emb = nn.Sequential(
-            nn.Linear(in_features=self.static_cond_dim, out_features=in_dim),
-            nn.GELU()
+            nn.Linear(in_features=self.static_cond_dim, out_features=in_dim*16),
+            nn.GELU(),
+            nn.Dropout(0.3),
+            nn.Linear(in_features=in_dim*16, out_features=in_dim*4),
+            nn.GELU(),
+            nn.Linear(in_features=in_dim*4, out_features=in_dim)
         )
         self.blocks = ContinuousTransformerWrapper(dim_in=in_dim,
                                                    dim_out=in_dim,

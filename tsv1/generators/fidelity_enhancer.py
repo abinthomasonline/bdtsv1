@@ -12,7 +12,7 @@ from torch import nn, einsum
 import torch.nn.functional as F
 
 from einops import rearrange, reduce
-from utils import SnakeActivation
+from tsv1.utils import SnakeActivation
 
 # constants
 

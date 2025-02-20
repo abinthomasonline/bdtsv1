@@ -10,13 +10,14 @@ import wandb
 import numpy as np
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
-from preprocessing.data_pipeline import build_data_pipeline, build_custom_data_pipeline
+
+from tsv1.preprocessing.data_pipeline import build_data_pipeline, build_custom_data_pipeline
+from tsv1.preprocessing.preprocess_ucr import DatasetImporterUCR, DatasetImporterCustom
+from tsv1.experiments.exp_fidelity_enhancer import ExpFidelityEnhancer
+from tsv1.utils import get_root_dir, load_yaml_param_settings, save_model, get_target_ucr_dataset_names, str2bool
+
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import WandbLogger
-from preprocessing.preprocess_ucr import DatasetImporterUCR, DatasetImporterCustom
-
-from experiments.exp_fidelity_enhancer import ExpFidelityEnhancer
-from utils import get_root_dir, load_yaml_param_settings, save_model, get_target_ucr_dataset_names, str2bool
 
 
 def load_args():

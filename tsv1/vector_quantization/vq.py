@@ -12,7 +12,7 @@ from torch.distributions.categorical import Categorical
 from einops import rearrange, repeat
 from contextlib import contextmanager
 
-from utils import *
+from tsv1.utils import *
 
 
 def exists(val):

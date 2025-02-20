@@ -11,9 +11,9 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
-from generators.maskgit import MaskGIT
-from preprocessing.data_pipeline import build_custom_data_pipeline
-from utils import get_root_dir, load_yaml_param_settings
+from tsv1.generators.maskgit import MaskGIT
+from tsv1.preprocessing.data_pipeline import build_custom_data_pipeline
+from tsv1.utils import get_root_dir, load_yaml_param_settings
 
 
 @torch.no_grad()

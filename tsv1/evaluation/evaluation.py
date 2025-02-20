@@ -13,19 +13,19 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
-from experiments.exp_stage2 import ExpStage2
-from generators.maskgit import MaskGIT
-from preprocessing.data_pipeline import build_custom_data_pipeline
-from preprocessing.preprocess import DatasetImporterCustom
-from generators.sample import static_condition_sample
+from tsv1.experiments.exp_stage2 import ExpStage2
+from tsv1.generators.maskgit import MaskGIT
+from tsv1.preprocessing.data_pipeline import build_custom_data_pipeline
+from tsv1.preprocessing.preprocess import DatasetImporterCustom
+from tsv1.generators.sample import static_condition_sample
 from supervised_FCN_2.example_pretrained_model_loading import load_pretrained_FCN
 from supervised_FCN_2.example_compute_FID import calculate_fid
 from supervised_FCN_2.example_compute_IS import calculate_inception_score
-from utils import time_to_timefreq, timefreq_to_time
-from generators.fidelity_enhancer import FidelityEnhancer
-from evaluation.rocket_functions import generate_kernels, apply_kernels
-from utils import zero_pad_low_freq, zero_pad_high_freq, remove_outliers
-from evaluation.stat_metrics import marginal_distribution_difference, auto_correlation_difference, skewness_difference, kurtosis_difference
+from tsv1.utils import time_to_timefreq, timefreq_to_time
+from tsv1.generators.fidelity_enhancer import FidelityEnhancer
+from tsv1.evaluation.rocket_functions import generate_kernels, apply_kernels
+from tsv1.utils import zero_pad_low_freq, zero_pad_high_freq, remove_outliers
+from tsv1.evaluation.stat_metrics import marginal_distribution_difference, auto_correlation_difference, skewness_difference, kurtosis_difference
 
 
 

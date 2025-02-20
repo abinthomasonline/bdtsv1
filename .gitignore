@@ -134,3 +134,4 @@ datasets/*
 wandb/
 saved_models/
 synthetic_data/
+*.ipynb

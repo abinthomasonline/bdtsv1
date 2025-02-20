@@ -8,20 +8,22 @@ from datetime import timedelta, date
 import json
 
 
-def source_to_data_pipeline(source_data_path, seq_len, static_id, sortby, other_static_columns):
+def source_to_data_pipeline(source_data_path, seq_len, num_non_ts_cols):
     df = pd.read_csv(source_data_path)
+    row_count, col_count = df.shape
+    num_ts_cols = col_count - num_non_ts_cols
 
-    # get ts column names
-    ts_col_names = [c for c in df.columns if
-                    "Unnamed" not in c and c not in other_static_columns and c != static_id and c != sortby]
+    print("number of non ts columns: {}, number of ts columns: {}".format(num_non_ts_cols, num_ts_cols))
+    ts = df[df.columns[num_non_ts_cols:]]
+    ts_col_names = list(ts.columns)
     extracted_ts_col_names = []
-    for i in range(len(ts_col_names)):
+    if len(ts_col_names) != num_ts_cols:
+        raise Exception("Number of ts columns names does not match number ts columns")
+    for i in range(num_ts_cols):
         if i % seq_len == 0:
             extracted_ts_col_names.append(ts_col_names[i])
-    # extract ts data and convert to the shape required by next step
-    ts = df[[c for c in df.columns if c not in other_static_columns and c != static_id and c != sortby]]
+
     ts = ts.to_numpy()
-    # print(extracted_ts_col_names)
     print("temporal data shape: {}, seq_len is: {}".format(ts.shape, seq_len))
     if ts.shape[1] % seq_len != 0:
         raise Exception("length of time series data must be divisble by seq_len")
@@ -33,7 +35,7 @@ def source_to_data_pipeline(source_data_path, seq_len, static_id, sortby, other_
     ts_df = pd.DataFrame(ts, columns=extracted_ts_col_names)
 
     # extract static data and repeat seq_len times
-    static_df = df[[c for c in df.columns if c in other_static_columns or c == static_id or c == sortby]]
+    static_df = df[df.columns[:num_non_ts_cols]]
     static_df_new = pd.DataFrame(np.repeat(static_df.values, seq_len, axis=0))
     static_df_new.columns = static_df.columns
     # merge two dfs

@@ -127,7 +127,7 @@ evaluation:
 #    - batch_size#generation
     - no_cuda
     - cuda_device
-    - non_ts_cols
+    - num_non_ts_cols
 
 
 #batch_size#generation:
@@ -150,13 +150,14 @@ cuda_device:
   tags:
     - Medium Impact
 
-non_ts_cols:
-  type: select
-  multi: true
-  options: columns
-  label: Non time-series columns (all non time series columns)
+num_non_ts_cols:
+  type: number
+  label: Number of non-time series columns (note that non-ts columns must be placed in front of ts columns in your source dataset)
+  min: 1
+  required: true
   tags:
     - High Impact
+
 
 num_rows:
   type: number
@@ -208,29 +209,38 @@ ts:
   type: object
   label: Temporal data
   fields:
+    - num_non_ts_cols#ts
     - static_id
     - other_static_columns
 #    - sortby
+num_non_ts_cols#ts:
+  type: number
+  label: Number of non-time series columns (note that non-ts columns must be placed in front of ts columns in your source dataset)
+  min: 1
+  required: true
+  tags:
+    - High Impact
+
 
 #col name of static_id should be a single string, thus shouldn't use the "multi" key here
-static_id:
-  type: select
-  options: columns
-  label: Column of static ID (data index)
-  tags:
-    - High Impact
-  documentation: |
-    The columns that identify the static items, like the customer ID for a customer transaction table.
-  required: true
-other_static_columns:
-  type: select
-  multi: true
-  options: columns
-  label: Non time-series columns
-  mutuallyExclusiveFields:
-    - ./static_id
-  tags:
-    - High Impact
+#static_id:
+#  type: select
+#  options: columns
+#  label: Column of static ID (data index)
+#  tags:
+#    - High Impact
+#  documentation: |
+#    The columns that identify the static items, like the customer ID for a customer transaction table.
+#  required: true
+#other_static_columns:
+#  type: select
+#  multi: true
+#  options: columns
+#  label: Non time-series columns
+#  mutuallyExclusiveFields:
+#    - ./static_id
+#  tags:
+#    - High Impact
 #sortby:
 #  type: select
 #  options: columns

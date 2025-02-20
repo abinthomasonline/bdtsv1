@@ -1,5 +1,6 @@
 {
   "ts": {
+    "num_non_ts_cols": 1,
     "static_id": null,
     "global_id": null,
     "other_static_columns": null,

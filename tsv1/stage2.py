@@ -14,16 +14,17 @@ import wandb
 import numpy as np
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
-from preprocessing.data_pipeline import build_custom_data_pipeline
+
+# Change relative imports to absolute imports
+from tsv1.preprocessing.data_pipeline import build_custom_data_pipeline
+from tsv1.preprocessing.preprocess import DatasetImporterCustom
+from tsv1.experiments.exp_stage2 import ExpStage2
+from tsv1.evaluation.evaluation import Evaluation
+from tsv1.utils import get_root_dir, load_yaml_param_settings, str2bool
+
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
-from preprocessing.preprocess import DatasetImporterCustom
-
-from experiments.exp_stage2 import ExpStage2
-from evaluation.evaluation import Evaluation
-from utils import get_root_dir, load_yaml_param_settings, str2bool
-
 
 os.environ['WANDB_MODE'] = 'disabled'
 

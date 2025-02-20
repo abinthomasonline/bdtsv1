@@ -16,10 +16,10 @@ from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.loggers import WandbLogger
 from torch.utils.data import DataLoader
 
-from preprocessing.preprocess import DatasetImporterCustom
-from experiments.exp_stage1 import ExpStage1
-from preprocessing.data_pipeline import build_custom_data_pipeline
-from utils import get_root_dir, load_yaml_param_settings, str2bool
+from tsv1.preprocessing.preprocess import DatasetImporterCustom
+from tsv1.experiments.exp_stage1 import ExpStage1
+from tsv1.preprocessing.data_pipeline import build_custom_data_pipeline
+from tsv1.utils import get_root_dir, load_yaml_param_settings, str2bool
 
 os.environ['WANDB_MODE'] = 'disabled'
 def load_args():
