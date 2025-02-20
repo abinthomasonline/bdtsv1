@@ -38,78 +38,101 @@ def sliding_window_view(data, window_size, step=1):
 
 
 class DatasetImporterCustom(object):
-    def __init__(self, config, train_data_path: str, test_data_path: str, static_cond_dim: int, seq_len: int, data_scaling: bool = True, **kwargs):
-        # training and test datasets
-        # typically, you'd load the data, for example, using pandas
+    def __init__(self, config, train_data_path: str, test_data_path: str, static_cond_dim: int, seq_len: int, data_scaling: bool = True, batch_size: int = 32, **kwargs):
+        self.batch_size = batch_size
+        self.seq_len = seq_len
+        self.static_cond_dim = static_cond_dim
+        self.mean = None
+        self.std = None
 
-        # fetch an entire dataset
-        # df_train = pd.read_csv(train_data_path, sep='\t', header=None)
-        # df_test = pd.read_csv(test_data_path, sep='\t', header=None)
+        # Process training data in batches
         if train_data_path:
-            df_train = pd.read_csv(train_data_path, skiprows=1, header=None)
-            df_train = df_train.astype('float32')
-            row_count, col_count = df_train.shape
-            if row_count % seq_len != 0:
-                raise Exception("Data pipeline transformation failed: Number of rows does not divide sequence length")
-            self.TS_train = df_train.iloc[:, static_cond_dim:].values # (b n_features/n_channels)
-            self.SC_train = df_train.iloc[:, 0:static_cond_dim].values # (b static_cond_dim)
-            # Transfer TS_train to (b c l)
-            self.TS_train = sliding_window_view(self.TS_train, window_size=seq_len)
-            self.TS_train = np.transpose(self.TS_train, axes=(0, 2, 1))
-            self.SC_train = sliding_window_view(self.SC_train, window_size=seq_len)
-            # remove duplicated condition rows
-            self.SC_train = np.delete(self.SC_train, obj=np.s_[1:], axis=1)
-            self.SC_train = np.squeeze(self.SC_train)
-            config['dataset']['num_features'] = self.TS_train.shape[1]
+            # First pass: calculate mean and std
+            if data_scaling:
+                self.calculate_statistics(train_data_path)
+                config['dataset']['mean'] = float(self.mean)
+                config['dataset']['std'] = float(self.std)
+            
+            # Second pass: process and scale data
+            self.process_data('train', train_data_path, config, data_scaling)
 
-
+        # Process test data in batches
         if test_data_path:
-            df_test = pd.read_csv(test_data_path, skiprows=1, header=None)
-            df_test = df_test.astype('float32')
-            self.TS_test = df_test.iloc[:, static_cond_dim:].values # (b n_features/n_channels)
-            self.SC_test = df_test.iloc[:, 0:static_cond_dim].values # (b static_cond_dim)
-            # Transfer TS_test to (b c l)
-            self.TS_test = sliding_window_view(self.TS_test, window_size=seq_len)
-            self.TS_test = np.transpose(self.TS_test, axes=(0, 2, 1))
-            self.SC_test = sliding_window_view(self.SC_test, window_size=seq_len)
-            # remove duplicated condition rows
-            self.SC_test = np.delete(self.SC_test, obj=np.s_[1:], axis=1)
-            self.SC_test = np.squeeze(self.SC_test)
+            self.process_data('test', test_data_path, config, data_scaling)
 
-        # self.TS_train, self.TS_test = df_train.iloc[:, static_cond_dim:].values, df_test.iloc[:, static_cond_dim:].values # (b n_features/n_channels)
-        # _, n_channels = self.TS_train.shape
-        # # print("Number of channels: ", n_channels)
-        # self.SC_train, self.SC_test = df_train.iloc[:, 0:static_cond_dim].values, df_test.iloc[:, 0:static_cond_dim].values  # (b static_cond_dim)
-        #
-        # # Transfer TS_train and TS_test to dimension (b c l)
-        # self.TS_train, self.TS_test = sliding_window_view(self.TS_train, window_size=seq_len), sliding_window_view(self.TS_test, window_size=seq_len)
-        # self.TS_train, self.TS_test = np.transpose(self.TS_train, axes=(0, 2, 1)), np.transpose(self.TS_test, axes=(0, 2, 1))
-        # self.SC_train, self.SC_test = sliding_window_view(self.SC_train, window_size=seq_len), sliding_window_view(self.SC_test, window_size=seq_len)
-        # # remove duplicated condition rows
-        # self.SC_train, self.SC_test = np.delete(self.SC_train, obj=np.s_[1:], axis=1), np.delete(self.SC_test, obj=np.s_[1:], axis=1)
-        # self.SC_train, self.SC_test = np.squeeze(self.SC_train), np.squeeze(self.SC_test)
-        # # self.SC_train, self.SC_test = np.repeat(self.SC_train, n_channels, axis=1), np.repeat(self.SC_test, n_channels, axis=1)
+    def calculate_statistics(self, data_path: str):
+        """Calculate mean and std in batches"""
+        sum_x = 0
+        sum_x2 = 0
+        total_count = 0
+        
+        # First pass: calculate mean
+        chunks = pd.read_csv(data_path, skiprows=1, header=None, chunksize=self.batch_size)
+        for chunk in chunks:
+            chunk = chunk.astype('float32')
+            ts = chunk.iloc[:, self.static_cond_dim:].values
+            if ts.shape[0] // self.seq_len != 0:
+                raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
+            else:
+                ts = sliding_window_view(ts, window_size=self.seq_len)
+                ts = np.transpose(ts, axes=(0, 2, 1))  # (b c l)
+                
+                sum_x += np.nansum(ts, axis=(0, 2))
+                sum_x2 += np.nansum(ts ** 2, axis=(0, 2))
+                total_count += ts.shape[0] * ts.shape[2]  # batch_size * seq_len
+        
+        # Calculate mean and std
+        self.mean = (sum_x / total_count)[None, :, None]  # (1 c 1)
+        variance = (sum_x2 / total_count) - (self.mean.squeeze() ** 2)
+        self.std = np.sqrt(variance)[None, :, None]  # (1 c 1)
+        
+        # Handle zero std
+        self.std[self.std == 0] = 1.0
 
-        self.mean, self.std = 1., 1.
-        if data_scaling:
-            if train_data_path:
-                self.mean = np.nanmean(self.TS_train, axis=(0, 2))[None, :, None]  # (1 c 1)
-                self.std = np.nanstd(self.TS_train, axis=(0, 2))[None, :, None]  # (1 c 1)
-                self.TS_train = (self.TS_train - self.mean) / self.std  # (b c l)
-            if test_data_path:
-                self.TS_test = (self.TS_test - self.mean) / self.std  # (b c l)
-
-        if train_data_path:
-            np.nan_to_num(self.TS_train, copy=False)
-            config['dataset']['mean'] = float(self.mean)
-            config['dataset']['std'] = float(self.std)
-        if test_data_path:
-            np.nan_to_num(self.TS_test, copy=False)
-
-        # print('self.TS_train.shape:', self.TS_train.shape)
-        # print('self.TS_test.shape:', self.TS_test.shape)
-        # print('self.SC_train.shape:', self.SC_train.shape)
-        # print('self.SC_test.shape:', self.SC_test.shape)
+    def process_data(self, kind: str, data_path: str, config: dict, data_scaling: bool):
+        ts_list = []
+        sc_list = []
+        
+        chunks = pd.read_csv(data_path, skiprows=1, header=None, chunksize=self.batch_size)
+        for chunk in chunks:
+            chunk = chunk.astype('float32')
+            
+            # Split into time series and static conditions
+            ts = chunk.iloc[:, self.static_cond_dim:].values
+            sc = chunk.iloc[:, 0:self.static_cond_dim].values
+            
+            # Ensure chunk size is divisible by sequence length
+            if ts.shape[0] // self.seq_len != 0:
+                raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
+            else:
+                # Process time series data
+                ts = sliding_window_view(ts, window_size=self.seq_len)
+                ts = np.transpose(ts, axes=(0, 2, 1))  # (b c l)
+                
+                # Scale the batch if needed
+                if data_scaling and self.mean is not None and self.std is not None:
+                    ts = (ts - self.mean) / self.std
+                
+                # Process static conditions
+                sc = sliding_window_view(sc, window_size=self.seq_len)
+                sc = np.delete(sc, obj=np.s_[1:], axis=1)
+                sc = np.squeeze(sc)
+                
+                # Handle NaN values for the current batch
+                np.nan_to_num(ts, copy=False)
+                
+                ts_list.append(ts)
+                sc_list.append(sc)
+        
+        # Concatenate all processed chunks
+        if ts_list:
+            if kind == 'train':
+                self.TS_train = np.concatenate(ts_list, axis=0)
+                self.SC_train = np.concatenate(sc_list, axis=0)
+                config['dataset']['num_features'] = self.TS_train.shape[1]
+            else:
+                self.TS_test = np.concatenate(ts_list, axis=0)
+                self.SC_test = np.concatenate(sc_list, axis=0)
 
 class CustomDataset(Dataset):
     def __init__(self, kind: str, dataset_importer: DatasetImporterCustom, **kwargs):
