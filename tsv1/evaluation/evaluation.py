@@ -17,7 +17,7 @@ from tsv1.experiments.exp_stage2 import ExpStage2
 from tsv1.generators.maskgit import MaskGIT
 from tsv1.preprocessing.data_pipeline import build_custom_data_pipeline
 from tsv1.preprocessing.preprocess import DatasetImporterCustom
-from tsv1.generators.sample import static_condition_sample
+from tsv1.generators.sample import static_condition_sample, extract_embedding_for_relational_components
 from supervised_FCN_2.example_pretrained_model_loading import load_pretrained_FCN
 from supervised_FCN_2.example_compute_FID import calculate_fid
 from supervised_FCN_2.example_compute_IS import calculate_inception_score
@@ -120,3 +120,12 @@ class Evaluation(nn.Module):
             X_new_R = X_new_R*self.std + self.mean
 
         return (x_new_l, x_new_h, x_new), X_new_R
+    
+
+    @torch.no_grad()
+    def extract_embeddings(self, n_samples, x):
+        """
+        extract embeddings from the encoder
+        """
+        z_low_freq, z_high_freq = extract_embedding_for_relational_components(self.maskgit, n_samples, self.device, x, self.batch_size)
+        return z_low_freq, z_high_freq

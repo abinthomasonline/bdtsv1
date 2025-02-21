@@ -102,9 +102,9 @@ class MaskGIT(nn.Module):
             model.load_state_dict(torch.load(dirname.joinpath(fname)))
 
     @torch.no_grad()
-    def extract_embeddings(self, x, encoder: VQVAEEncoder):
+    def encode_to_z(self, x, encoder: VQVAEEncoder):
         """
-        extract embeddings from the encoder
+        encode x to z
         """
         z = encoder(x)
         return z

@@ -112,3 +112,35 @@ def save_generated_samples(x_new: np.ndarray, save: bool, fname: str = None):
         with open(get_root_dir().joinpath('generated_samples', fname), 'wb') as f:
             np.save(f, x_new)
             print("numpy matrix of the generated samples are saved as `generated_samples/generated_samples.npy`.")
+
+
+
+@torch.no_grad()
+def extract_embedding_for_relational_components(maskgit: MaskGIT, n_samples: int, device, x, batch_size=32):
+    """
+    extract embeddings from the encoder
+    """
+    assert n_samples == x.shape[0]
+
+    encoder_l = maskgit.encoder_l
+    encoder_h = maskgit.encoder_h
+    extractor = maskgit.encode_to_z
+    z_low_freq, z_high_freq = [], []
+
+    n_iters = n_samples // batch_size
+    is_residual_batch = False
+    if n_samples % batch_size > 0:
+        n_iters += 1
+        is_residual_batch = True
+    for i in range(n_iters):
+        b = batch_size
+        if (i+1 == n_iters) and is_residual_batch:
+            b = n_samples - ((n_iters-1) * batch_size)
+            z_low_freq.append(extractor(x[n_samples-b:n_samples], encoder_l))
+            z_high_freq.append(extractor(x[n_samples-b:n_samples], encoder_h))
+        else:
+            z_low_freq.append(extractor(x[b*i:b*(i+1)], encoder_l))
+            z_high_freq.append(extractor(x[b*i:b*(i+1)], encoder_h))
+    z_low_freq = torch.cat(z_low_freq)
+    z_high_freq = torch.cat(z_high_freq)
+    return z_low_freq, z_high_freq

@@ -95,6 +95,42 @@ def evaluate(config: dict,
     wandb.finish()
 
 
+
+def generate_embeddings(config: dict,
+             dataset_name: str,
+             static_cond_dim: int,
+             x,
+             gpu_device_ind,
+             use_fidelity_enhancer:bool,
+             feature_extractor_type:str,
+             use_custom_dataset:bool=False,
+             rand_seed:Union[int,None]=None,
+             ):
+    in_channels, input_length = config['dataset']['num_features'], config['seq_len']
+
+     # Check if GPU is available
+    if not torch.cuda.is_available():
+        print('GPU is not available.')
+        # num_cpus = multiprocessing.cpu_count()
+        num_cpus = 1
+        print(f'using {num_cpus} CPUs..')
+        device = 'cpu'
+    else:
+        # device = gpu_device_ind
+        device = torch.device('cuda:0')
+
+    evaluation = Evaluation(dataset_name, static_cond_dim, in_channels, input_length, device, config,
+                            use_fidelity_enhancer=use_fidelity_enhancer,
+                            feature_extractor_type=feature_extractor_type,
+                            use_custom_dataset=use_custom_dataset).to(device)
+    
+    z_low_freq, z_high_freq = evaluation.extract_embeddings(x.shape[0], x)
+
+    return z_low_freq, z_high_freq
+
+    
+
+
 if __name__ == '__main__':
     # load config
     args = load_args()
