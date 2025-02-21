@@ -38,7 +38,7 @@ def load_args():
     return parser.parse_args()
 
 
-def evaluate(config: dict,
+def generate_data(config: dict,
              dataset_name: str,
              static_cond_dim: int,
              static_conditions,
@@ -150,7 +150,7 @@ if __name__ == '__main__':
     static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
     # print(static_conditions.shape)
     # generate synthetic data
-    evaluate(config, dataset_name, static_cond_dim, static_conditions, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
+    generate_data(config, dataset_name, static_cond_dim, static_conditions, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
 
     # clean memory
     torch.cuda.empty_cache()
