@@ -102,6 +102,14 @@ class MaskGIT(nn.Module):
             model.load_state_dict(torch.load(dirname.joinpath(fname)))
 
     @torch.no_grad()
+    def extract_embeddings(self, x, encoder: VQVAEEncoder):
+        """
+        extract embeddings from the encoder
+        """
+        z = encoder(x)
+        return z
+
+    @torch.no_grad()
     def encode_to_z_q(self, x, encoder: VQVAEEncoder, vq_model: VectorQuantize, svq_temp:Union[float,None]=None):
         """
         encode x to zq
