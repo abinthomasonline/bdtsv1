@@ -9,6 +9,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
 
+from datapip import data_struct as ds
+
 # Change this import to absolute import
 from tsv1.utils import get_root_dir
 
@@ -89,20 +91,26 @@ class DatasetImporterCustom(object):
         # Handle zero std
         self.std[self.std == 0] = 1.0
 
-    def process_data(self, kind: str, data_path: str, config: dict, data_scaling: bool):
+    def process_data(
+            self, kind: str, static_data: ds.BaseDataFrame, temporal_data: ds.BaseDataFrameGroupBy,
+            config: dict, data_scaling: bool
+    ):
         ts_list = []
         sc_list = []
-        
-        chunks = pd.read_csv(data_path, skiprows=1, header=None, chunksize=self.batch_size)
-        for chunk in chunks:
-            chunk = chunk.astype('float32')
-            
+
+        static_ids = static_data.index
+        n_temporal_columns = len(temporal_data.columns)
+        for i in range(0, static_data.shape[0], self.batch_size):
             # Split into time series and static conditions
-            ts = chunk.iloc[:, self.static_cond_dim:].values
-            sc = chunk.iloc[:, 0:self.static_cond_dim].values
-            
+            batch_ids = static_ids[i:i + self.batch_size]
+            sc = static_data[batch_ids].values
+            ts = np.zeros((sc.shape[0], self.seq_len * n_temporal_columns), dtype=sc.dtype)
+            for j, sc_id in enumerate(batch_ids):
+                g_data = temporal_data.get_group(sc_id).values.flatten()
+                ts[j, :g_data.shape[-1]] = g_data
+
             # Ensure chunk size is divisible by sequence length
-            if ts.shape[0] // self.seq_len != 0:
+            if ts.shape[-1] // self.seq_len != 0:
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
                 # Process time series data
@@ -121,18 +129,18 @@ class DatasetImporterCustom(object):
                 # Handle NaN values for the current batch
                 np.nan_to_num(ts, copy=False)
                 
-                ts_list.append(ts)
-                sc_list.append(sc)
+                ts_list.append(static_data.from_pandas(pd.DataFrame(ts), index=batch_ids))
+                sc_list.append(static_data.from_pandas(pd.DataFrame(sc), index=batch_ids))
         
         # Concatenate all processed chunks
         if ts_list:
             if kind == 'train':
-                self.TS_train = np.concatenate(ts_list, axis=0)
-                self.SC_train = np.concatenate(sc_list, axis=0)
+                self.TS_train = static_data.concat(ts_list, axis=0)
+                self.SC_train = static_data.concat(sc_list, axis=0)
                 config['dataset']['num_features'] = self.TS_train.shape[1]
             else:
-                self.TS_test = np.concatenate(ts_list, axis=0)
-                self.SC_test = np.concatenate(sc_list, axis=0)
+                self.TS_test = static_data.concat(ts_list, axis=0)
+                self.SC_test = static_data.concat(sc_list, axis=0)
 
 class CustomDataset(Dataset):
     def __init__(self, kind: str, dataset_importer: DatasetImporterCustom, **kwargs):
@@ -153,9 +161,10 @@ class CustomDataset(Dataset):
             raise ValueError
 
         self._len = self.TS.shape[0]
+        self._index = self.TS.index
 
     def __getitem__(self, idx):
-        ts, sc = self.TS[idx, :], self.SC[idx, :]
+        ts, sc = self.TS.get_by_index(self._index[idx]), self.SC.get_by_index(self._index[idx])
         return ts, sc
 
     def __len__(self):
