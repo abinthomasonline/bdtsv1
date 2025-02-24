@@ -71,7 +71,7 @@ class DatasetImporterCustom(object):
         for chunk in chunks:
             chunk = chunk.astype('float32')
             ts = chunk.iloc[:, self.static_cond_dim:].values
-            if ts.shape[0] // self.seq_len != 0:
+            if ts.shape[1] // self.seq_len != 0:
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
                 ts = sliding_window_view(ts, window_size=self.seq_len)
@@ -102,7 +102,7 @@ class DatasetImporterCustom(object):
             sc = chunk.iloc[:, 0:self.static_cond_dim].values
             
             # Ensure chunk size is divisible by sequence length
-            if ts.shape[0] // self.seq_len != 0:
+            if ts.shape[1] // self.seq_len != 0:
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
                 # Process time series data
