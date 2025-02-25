@@ -14,55 +14,36 @@ from datapip import data_struct as ds
 # Change this import to absolute import
 from tsv1.utils import get_root_dir
 
-def sliding_window_view(data, window_size, step=1):
-    if data.ndim != 2:
-        raise ValueError("Input array must be 2D")
-    L, C = data.shape  # Length and Channels
-    if L < window_size:
-        raise ValueError("Window size must be less than or equal to the length of the array")
 
-    # Calculate the number of windows B
-    B = L // window_size
-    # B = L - window_size + 1
-
-    # Shape of the output array
-    new_shape = (B, window_size, C)
-
-    # Calculate strides
-    original_strides = data.strides
-    new_strides = (window_size * original_strides[0],) + original_strides  # (stride for L, stride for W, stride for C)
-    # new_strides = (original_strides[0],) + original_strides  # (stride for L, stride for W, stride for C)
-
-    # Create the sliding window view
-    strided_array = np.lib.stride_tricks.as_strided(data, shape=new_shape, strides=new_strides)
-    # strided_array = np.transpose(strided_array, axes=(0, 2, 1)) #(b c l)
-    return strided_array
 
 
 class DatasetImporterCustom(object):
-    def __init__(self, config, train_data_path: str, test_data_path: str, static_cond_dim: int, seq_len: int, data_scaling: bool = True, batch_size: int = 32, **kwargs):
+    def __init__(self, config, static_data_train: ds.BaseDataFrame, temporal_data_train: ds.BaseDataFrameGroupBy, static_data_test: ds.BaseDataFrame, temporal_data_test: ds.BaseDataFrameGroupBy, seq_len: int, data_scaling: bool = True, batch_size: int = 32, **kwargs):
         self.batch_size = batch_size
         self.seq_len = seq_len
-        self.static_cond_dim = static_cond_dim
         self.mean = None
         self.std = None
 
         # Process training data in batches
-        if train_data_path:
+        if static_data_train is not None and temporal_data_train is not None:
             # First pass: calculate mean and std
             if data_scaling:
-                self.calculate_statistics(train_data_path)
-                config['dataset']['mean'] = float(self.mean)
-                config['dataset']['std'] = float(self.std)
+                self.calculate_statistics(temporal_data_train)
+                config['dataset']['mean'] = self.mean.tolist()
+                config['dataset']['std'] = self.std.tolist()
             
             # Second pass: process and scale data
-            self.process_data('train', train_data_path, config, data_scaling)
+            self.process_data('train', static_data_train, temporal_data_train, data_scaling)
+            config['dataset']['num_features'] = self.TS_train.shape[1]
+            print(f"TS_train shape: {self.TS_train.shape}")
+            print(f"SC_train shape: {self.SC_train.shape}")
 
         # Process test data in batches
-        if test_data_path:
-            self.process_data('test', test_data_path, config, data_scaling)
+        if static_data_test is not None and temporal_data_test is not None:
+            self.process_data('test', static_data_test, temporal_data_test, data_scaling)
 
-    def calculate_statistics(self, data_path: str):
+    # To do - Jiayu, modify this function to use datapip
+    def calculate_statistics(self, temporal_data: ds.BaseDataFrameGroupBy):
         """Calculate mean and std in batches"""
         sum_x = 0
         sum_x2 = 0
@@ -76,8 +57,7 @@ class DatasetImporterCustom(object):
             if ts.shape[1] // self.seq_len != 0:
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
-                ts = sliding_window_view(ts, window_size=self.seq_len)
-                ts = np.transpose(ts, axes=(0, 2, 1))  # (b c l)
+                ts = np.reshape(ts, (ts.shape[0], ts.shape[1] // self.seq_len, self.seq_len)) # (b, c, l)
                 
                 sum_x += np.nansum(ts, axis=(0, 2))
                 sum_x2 += np.nansum(ts ** 2, axis=(0, 2))
@@ -91,10 +71,10 @@ class DatasetImporterCustom(object):
         # Handle zero std
         self.std[self.std == 0] = 1.0
 
-    def process_data(
-            self, kind: str, static_data: ds.BaseDataFrame, temporal_data: ds.BaseDataFrameGroupBy,
-            config: dict, data_scaling: bool
-    ):
+        self.mean.astype(np.float32)
+        self.std.astype(np.float32)
+
+    def process_data(self, kind: str, static_data: ds.BaseDataFrame, temporal_data: ds.BaseDataFrameGroupBy, data_scaling: bool):
         ts_list = []
         sc_list = []
 
@@ -114,17 +94,12 @@ class DatasetImporterCustom(object):
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
                 # Process time series data
-                ts = sliding_window_view(ts, window_size=self.seq_len)
-                ts = np.transpose(ts, axes=(0, 2, 1))  # (b c l)
+                ts = np.reshape(ts, (ts.shape[0], ts.shape[1] // self.seq_len, self.seq_len)) # (b, c, l)
                 
                 # Scale the batch if needed
                 if data_scaling and self.mean is not None and self.std is not None:
                     ts = (ts - self.mean) / self.std
                 
-                # Process static conditions
-                sc = sliding_window_view(sc, window_size=self.seq_len)
-                sc = np.delete(sc, obj=np.s_[1:], axis=1)
-                sc = np.squeeze(sc)
                 
                 # Handle NaN values for the current batch
                 np.nan_to_num(ts, copy=False)
@@ -137,7 +112,6 @@ class DatasetImporterCustom(object):
             if kind == 'train':
                 self.TS_train = static_data.concat(ts_list, axis=0)
                 self.SC_train = static_data.concat(sc_list, axis=0)
-                config['dataset']['num_features'] = self.TS_train.shape[1]
             else:
                 self.TS_test = static_data.concat(ts_list, axis=0)
                 self.SC_test = static_data.concat(sc_list, axis=0)
