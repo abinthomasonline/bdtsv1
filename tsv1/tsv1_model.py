@@ -31,8 +31,8 @@ class tsv1:
       :param chunk_size: size of batch for processing
       :type chunk_size: int
     """
-    def __init__(self, static_train_data: ds.BaseDataFrame, temporal_train_data: ds.BaseDataFrameGroupBy, 
-                 static_condition_data: ds.BaseDataFrame, config_path: str, chunk_size: int):
+    def __init__(self, static_train_data: ds.BaseDataFrame=None, temporal_train_data: ds.BaseDataFrameGroupBy=None, 
+                 static_condition_data: ds.BaseDataFrame=None, config_path: str=None, chunk_size: int=32):
         self.config_path = config_path
         self.static_train_data = static_train_data
         self.temporal_train_data = temporal_train_data
