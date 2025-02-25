@@ -18,7 +18,7 @@ from tsv1.utils import get_root_dir
 
 
 class DatasetImporterCustom(object):
-    def __init__(self, config, static_data_train: ds.BaseDataFrame, temporal_data_train: ds.BaseDataFrameGroupBy, static_data_test: ds.BaseDataFrame, temporal_data_test: ds.BaseDataFrameGroupBy, seq_len: int, data_scaling: bool = True, batch_size: int = 32, **kwargs):
+    def __init__(self, config, static_data_train: ds.BaseDataFrame = None, temporal_data_train: ds.BaseDataFrameGroupBy = None, static_data_test: ds.BaseDataFrame = None, temporal_data_test: ds.BaseDataFrameGroupBy = None, seq_len: int = 0, data_scaling: bool = True, batch_size: int = 32, **kwargs):
         self.batch_size = batch_size
         self.seq_len = seq_len
         self.mean = None
@@ -39,7 +39,7 @@ class DatasetImporterCustom(object):
             print(f"SC_train shape: {self.SC_train.shape}")
 
         # Process test data in batches
-        if static_data_test is not None and temporal_data_test is not None:
+        if static_data_test is not None:
             self.process_data('test', static_data_test, temporal_data_test, data_scaling)
 
     # To do - Jiayu, modify this function to use datapip
@@ -79,23 +79,30 @@ class DatasetImporterCustom(object):
         sc_list = []
 
         static_ids = static_data.index
-        n_temporal_columns = len(temporal_data.columns)
+        if temporal_data is not None:
+            n_temporal_columns = len(temporal_data.columns)
+        else:
+            n_temporal_columns = 0
+
         for i in range(0, static_data.shape[0], self.batch_size):
             # Split into time series and static conditions
             batch_ids = static_ids[i:i + self.batch_size]
             sc = static_data[batch_ids].values
-            ts = np.zeros((sc.shape[0], self.seq_len * n_temporal_columns), dtype=sc.dtype)
-            for j, sc_id in enumerate(batch_ids):
-                g_data = temporal_data.get_group(sc_id).values.flatten()
-                ts[j, :g_data.shape[-1]] = g_data
+            if n_temporal_columns > 0:
+                ts = np.zeros((sc.shape[0], self.seq_len * n_temporal_columns), dtype=sc.dtype)
+                for j, sc_id in enumerate(batch_ids):
+                    g_data = temporal_data.get_group(sc_id).values.flatten()
+                    ts[j, :g_data.shape[-1]] = g_data
+            else:
+                ts = np.zeros((sc.shape[0], 0), dtype=sc.dtype)
 
             # Ensure chunk size is divisible by sequence length
-            if ts.shape[-1] // self.seq_len != 0:
+            if ts.shape[1] // self.seq_len != 0:
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
                 # Process time series data
                 ts = np.reshape(ts, (ts.shape[0], ts.shape[1] // self.seq_len, self.seq_len)) # (b, c, l)
-                
+                    
                 # Scale the batch if needed
                 if data_scaling and self.mean is not None and self.std is not None:
                     ts = (ts - self.mean) / self.std

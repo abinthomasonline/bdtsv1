@@ -79,32 +79,28 @@ def generate_data(config: dict,
                             use_fidelity_enhancer=use_fidelity_enhancer,
                             feature_extractor_type=feature_extractor_type,
                             use_custom_dataset=use_custom_dataset).to(device)
-    (_, _, xhat), xhat_R = evaluation.sample(static_conditions.shape[0], static_conditions)
-    x_new = np.transpose(xhat, (0, 2, 1))
-    if not os.path.isdir(get_root_dir().joinpath('synthetic_data')):
-        os.mkdir(get_root_dir().joinpath('synthetic_data'))
-    np_file_path = os.path.join(f'synthetic_data', f'ts-synthetic-{dataset_name}.npy')
-    csv_file_path = os.path.join(f'synthetic_data', f'ts-synthetic-{dataset_name}.csv')
-    np.save(np_file_path, x_new)
-    dim1 = x_new.shape[0]
-    dim2 = x_new.shape[1] * x_new.shape[2]
-    df = pd.DataFrame(x_new.reshape((dim1, dim2)))
-    df.to_csv(csv_file_path, index=False)
+    (_, _, xhat), xhat_R = evaluation.sample(static_conditions.shape[0], static_conditions) # (b, c, l)
+    x_new = np.transpose(xhat, (0, 2, 1)) # (b, l, c)
+
+    #### To do - Jiayu, add code to convert the generated data into ds.BaseDataFrame
+    
+    ####
 
 
     wandb.finish()
+
+    return x_new    
 
 
 
 def generate_embeddings(config: dict,
              dataset_name: str,
              static_cond_dim: int,
-             x,
+             ts_data,
              gpu_device_ind,
              use_fidelity_enhancer:bool,
              feature_extractor_type:str,
              use_custom_dataset:bool=False,
-             rand_seed:Union[int,None]=None,
              ):
     in_channels, input_length = config['dataset']['num_features'], config['seq_len']
 
@@ -124,7 +120,7 @@ def generate_embeddings(config: dict,
                             feature_extractor_type=feature_extractor_type,
                             use_custom_dataset=use_custom_dataset).to(device)
     
-    z_low_freq, z_high_freq = evaluation.extract_embeddings(x.shape[0], x)
+    z_low_freq, z_high_freq = evaluation.extract_embeddings(ts_data.shape[0], ts_data)
 
     return z_low_freq, z_high_freq
 
