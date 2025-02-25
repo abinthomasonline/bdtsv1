@@ -11,6 +11,7 @@ from tsv1.stage2 import *
 from tsv1.generate import *
 
 from datapip import data_struct as ds
+from datapip.algo.basic import uniform_like
 
 warnings.filterwarnings('ignore')
 
@@ -44,11 +45,10 @@ class tsv1:
         """
         Train the TSV1 model
         """
-        #### To do - Jiayu, add code to split static_train_data and temporal_train_data into static_test_data and temporal_test_data for validation in early stopping
-
-
-        ####
-
+        is_test = ds.BaseSeries.from_uniform(True, index=self.static_train_data.index)
+        is_test = uniform_like(is_test, low=0, high=1) <= 0.2
+        static_test_data = self.static_train_data[is_test]
+        temporal_test_data = self.temporal_train_data.filter(lambda g, d: is_test[g])
 
         new_model_config_save_path = self.config_path
 
@@ -147,8 +147,7 @@ class tsv1:
         
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
 
-        # To do - Jiayu, check if this can be loaded properly
-        static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
+        static_conditions = torch.from_numpy(test_data_loader.dataset.SC.values)
 
         # generate synthetic data
         syn_data = generate_data(config, dataset_name, static_cond_dim, static_conditions, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
