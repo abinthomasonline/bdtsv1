@@ -40,7 +40,7 @@ class tsv1:
         self.chunk_size = chunk_size
 
     
-    def train_tsv1_model(self):
+    def train(self):
         """
         Train the TSV1 model
         """
