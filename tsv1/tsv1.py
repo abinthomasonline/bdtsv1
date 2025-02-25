@@ -146,6 +146,8 @@ class tsv1:
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
+
+        # To do - Jiayu, check if this can be loaded properly
         static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
 
         # generate synthetic data
@@ -182,6 +184,8 @@ class tsv1:
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
+        
+        # To do - Jiayu, check if this can be loaded properly
         ts_data = torch.from_numpy(test_data_loader.dataset.TS)
 
         # generate embeddings
