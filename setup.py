@@ -36,7 +36,8 @@ setuptools.setup(
         'docstring_parser>=0.16',
         'psutil>=5.9.0',
         'rstr>=3.2.2',
-        'pytorch_tabnet>=4.1.0'
+        'pytorch_tabnet>=4.1.0',
+        'datapip'
     ],
     python_requires='>=3.8',
     classifiers=[
