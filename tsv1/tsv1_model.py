@@ -5,10 +5,12 @@ import signal
 import sys
 import traceback
 import warnings
+import shutil
 
 from tsv1.stage1 import *
 from tsv1.stage2 import *
 from tsv1.generate import *
+from tsv1.utils import get_root_dir
 
 from datapip import data_struct as ds
 
@@ -32,13 +34,13 @@ class tsv1:
       :type chunk_size: int
     """
     def __init__(self, static_train_data: ds.BaseDataFrame=None, temporal_train_data: ds.BaseDataFrameGroupBy=None, 
-                 static_condition_data: ds.BaseDataFrame=None, config_path: str=None, chunk_size: int=32):
+                 static_condition_data: ds.BaseDataFrame=None, config_path: str=None, chunk_size: int=32, out_dir: str=None, **kwargs):
         self.config_path = config_path
         self.static_train_data = static_train_data
         self.temporal_train_data = temporal_train_data
         self.static_condition_data = static_condition_data
         self.chunk_size = chunk_size
-
+        self.out_dir = out_dir
     
     def train(self):
         """
@@ -195,5 +197,15 @@ class tsv1:
         torch.cuda.empty_cache()
 
         return low_freq_embeddings, high_freq_embeddings
+
+
+    def save(self,):
+        os.makedirs(self.out_dir, exist_ok=True)
+        dataset_name = config['dataset']['dataset_name']
+        model_save_path = os.path.join(f'saved_models', f'stage1-{dataset_name}.ckpt')
+        shutil.copy(model_save_path, self.out_dir)
+        model_save_path = os.path.join(f'saved_models', f'stage2-{dataset_name}.ckpt')
+        shutil.copy(model_save_path, self.out_dir)
+        print(f'Model saved to {self.out_dir}')
 
 
