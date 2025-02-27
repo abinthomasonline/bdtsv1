@@ -200,6 +200,16 @@ class tsv1:
 
 
     def save(self,):
+        with open(self.config_path, "r") as f:
+            model_config = json.load(f)
+            f.close()
+
+        if 'seq_len' in model_config:
+            config = model_config
+        else:
+            config = {}
+            for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+            
         os.makedirs(self.out_dir, exist_ok=True)
         dataset_name = config['dataset']['dataset_name']
         model_save_path = os.path.join(f'saved_models', f'stage1-{dataset_name}.ckpt')
