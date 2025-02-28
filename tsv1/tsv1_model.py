@@ -50,19 +50,12 @@ class tsv1:
 
 
         ####
-
-
-        new_model_config_save_path = self.config_path
-
         with open(self.config_path, "r") as f:
             model_config = json.load(f)
             f.close()
 
-        if 'seq_len' in model_config:
-            config = model_config
-        else:
-            config = {}
-            for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+        new_model_config_save_path = self.config_path
+        config = self.load_config()
 
         # Stage1 training
         dataset_name = config['dataset']['dataset_name']
@@ -89,16 +82,7 @@ class tsv1:
 
         
         # load training configs for Stage2
-        with open(self.config_path, "r") as f:
-            model_config = json.load(f)
-
-
-        if 'seq_len' in model_config:
-            config = model_config
-        else:
-            config = {}
-            for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
-
+        config = self.load_config()
 
         # Stage 2 training
         dataset_name = config['dataset']['dataset_name']
@@ -120,6 +104,29 @@ class tsv1:
                  feature_extractor_type='rocket', use_custom_dataset=True)
         
 
+    def train_stage1(self):
+        """
+        Train the TSV1 stage 1 model
+        """
+        config = self.load_config()
+        # Stage1 training
+        dataset_name = config['dataset']['dataset_name']
+        batch_size = config['dataset']['batch_sizes']['stage1']
+        seq_len = config['seq_len']
+        gpu_device_ind = config['gpu_device_id']
+
+        
+
+        dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
+                                                 temporal_data_train=self.temporal_train_data, 
+                                                 static_data_test=static_test_data, 
+                                                 temporal_data_test=temporal_test_data, 
+                                                 seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
+        
+        train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
+                                               for kind in ['train', 'test']]
+        
+        train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
 
         
 
@@ -163,16 +170,7 @@ class tsv1:
 
 
     def generate_embeddings(self):
-        with open(self.config_path, "r") as f:
-            model_config = json.load(f)
-            f.close()
-
-        if 'seq_len' in model_config:
-            config = model_config
-        else:
-            config = {}
-            for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
-
+        config = self.load_config()
         dataset_name = config['dataset']['dataset_name']
         batch_size = config['evaluation']['batch_size']
         static_cond_dim = config['static_cond_dim']
@@ -200,6 +198,23 @@ class tsv1:
 
 
     def save(self,):
+        config = self.load_config() 
+        os.makedirs(self.out_dir, exist_ok=True)
+        dataset_name = config['dataset']['dataset_name']
+        model_save_path = os.path.join(f'saved_models', f'stage1-{dataset_name}.ckpt')
+        if os.path.exists(model_save_path): 
+            shutil.copy(model_save_path, self.out_dir)
+            print(f'Stage 1 model saved to {self.out_dir}')
+        else:
+            print(f'Stage 1 model not found at {model_save_path}')
+        model_save_path = os.path.join(f'saved_models', f'stage2-{dataset_name}.ckpt')
+        if os.path.exists(model_save_path):
+            shutil.copy(model_save_path, self.out_dir)
+            print(f'Stage 2 model saved to {self.out_dir}')
+        else:
+            print(f'Stage 2 model not found at {model_save_path}')
+    
+    def load_config(self):
         with open(self.config_path, "r") as f:
             model_config = json.load(f)
             f.close()
@@ -209,13 +224,7 @@ class tsv1:
         else:
             config = {}
             for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
-            
-        os.makedirs(self.out_dir, exist_ok=True)
-        dataset_name = config['dataset']['dataset_name']
-        model_save_path = os.path.join(f'saved_models', f'stage1-{dataset_name}.ckpt')
-        shutil.copy(model_save_path, self.out_dir)
-        model_save_path = os.path.join(f'saved_models', f'stage2-{dataset_name}.ckpt')
-        shutil.copy(model_save_path, self.out_dir)
-        print(f'Model saved to {self.out_dir}')
+
+        return config
 
 
