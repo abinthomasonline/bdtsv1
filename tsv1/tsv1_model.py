@@ -58,6 +58,13 @@ class tsv1:
         self.temporal_train_data = temporal_train_data
         self.chunk_size = chunk_size
         self.out_dir = out_dir
+
+        #### To do - Jiayu, add code to split static_train_data and temporal_train_data into static_test_data and temporal_test_data for validation in early stopping
+        self.static_test_data = None
+        self.temporal_test_data = None
+
+        ####
+        
     
     def train(self):
         """
@@ -87,8 +94,8 @@ class tsv1:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=static_test_data, 
-                                                 temporal_data_test=temporal_test_data, 
+                                                 static_data_test=self.static_test_data, 
+                                                 temporal_data_test=self.temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
@@ -116,8 +123,8 @@ class tsv1:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=static_test_data, 
-                                                 temporal_data_test=temporal_test_data, 
+                                                 static_data_test=self.static_test_data, 
+                                                 temporal_data_test=self.temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
@@ -142,8 +149,8 @@ class tsv1:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=static_test_data, 
-                                                 temporal_data_test=temporal_test_data, 
+                                                 static_data_test=self.static_test_data, 
+                                                 temporal_data_test=self.temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
@@ -153,7 +160,7 @@ class tsv1:
 
         
 
-    def generate_data(self, static_condition_data: ds.BaseDataFrame) -> ds.BaseDataFrameGroupBy:
+    def generate_ts_data(self, static_condition_data: ds.BaseDataFrame):
         config = self.load_config()
         dataset_name = self.dataset_name
         batch_size = config['evaluation']['batch_size']
@@ -210,8 +217,7 @@ class tsv1:
 
 
 
-
-    def generate_embeddings(self, static_condition_data: ds.BaseDataFrame) -> tuple[ds.BaseDataFrame, ds.BaseDataFrame]:
+    def generate_embeddings(self, ts_data: ds.BaseDataFrameGroupBy):
         config = self.load_config()
         dataset_name = config['dataset']['dataset_name']
         batch_size = config['evaluation']['batch_size']
@@ -219,30 +225,34 @@ class tsv1:
         seq_len = config['seq_len']
         gpu_device_ind = config['gpu_device_id']
 
-        if static_cond_dim != config['static_cond_dim'] or static_cond_dim != len(static_condition_data.columns):
-            raise ValueError(f"static_cond_dim mismatch: {static_cond_dim} != {config['static_cond_dim']} or {len(static_condition_data.columns)}")
 
-        dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
+        index = ts_data.groups
+        dataset_importer = DatasetImporterCustom(config=config, static_data_train=None,
                                                  temporal_data_train=None, 
-                                                 static_data_test=static_condition_data, 
-                                                 temporal_data_test=None, 
+                                                 static_data_test=ds.BaseSeries.registry[ts_data.data_struct].from_uniform(0, index=index)[[]],
+                                                 temporal_data_test=ts_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
-        
+
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
-        
-        #### To do - Jiayu, check if this can be loaded properly
-        ts_data = torch.from_numpy(test_data_loader.dataset.TS)
+        low_outputs = []
+        high_outputs = []
+        for st in range(0, len(index), self.chunk_size):
+            group_index = index[st:st + self.chunk_size]
+            ts_data = torch.from_numpy(test_data_loader.dataset.TS.get_by_index(group_index).values)
 
-        # generate embeddings
-        low_freq_embeddings, high_freq_embeddings = generate_embeddings(config, dataset_name, static_cond_dim, ts_data, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
+            # generate embeddings
+            low_freq_embeddings, high_freq_embeddings = generate_embeddings(config, dataset_name, static_cond_dim, ts_data, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
 
-        # clean memory
-        torch.cuda.empty_cache()
-        ####
-        low_freq_embeddings = static_condition_data.from_pandas(pd.DataFrame(low_freq_embeddings), index=static_condition_data.index)
-        high_freq_embeddings = static_condition_data.from_pandas(pd.DataFrame(high_freq_embeddings), index=static_condition_data.index)
+            # clean memory
+            torch.cuda.empty_cache()
+            ####
+            low_freq_embeddings = ds.BaseDataFrame.registry[index.data_struct].from_pandas(pd.DataFrame(low_freq_embeddings), index=group_index)
+            high_freq_embeddings =  ds.BaseDataFrame.registry[index.data_struct].from_pandas(pd.DataFrame(high_freq_embeddings), index=group_index)
+            low_outputs.append(low_freq_embeddings)
+            high_outputs.append(high_freq_embeddings)
 
-        return low_freq_embeddings, high_freq_embeddings
+        return (ds.BaseDataFrame.registry[index.data_struct].concat(low_outputs, axis=0),
+                ds.BaseDataFrame.registry[index.data_struct].concat(high_outputs, axis=0))
 
 
     def save(self):
