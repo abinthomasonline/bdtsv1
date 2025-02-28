@@ -11,6 +11,9 @@ from tsv1.stage1 import *
 from tsv1.stage2 import *
 from tsv1.generate import *
 from tsv1.utils import get_root_dir
+from tsv1.utils import freeze
+from tsv1.exp_stage1 import ExpStage1
+from tsv1.exp_stage2 import ExpStage2
 
 from datapip import data_struct as ds
 
@@ -26,20 +29,26 @@ class tsv1:
       :type static_train_data: ds.BaseDataFrame
       :param temporal_train_data: temporal training data
       :type temporal_train_data: ds.BaseDataFrameGroupBy
-      :param static_condition_data: static condition data for generation
-      :type static_condition_data: ds.BaseDataFrame
-      :param config_path: path to configuration file
-      :type config_path: str
+      :param num_features: number of features
+      :type num_features: int
+      :param static_cond_dim: number of static condition dimensions
+      :type static_cond_dim: int
+      :param dataset_name: name of the dataset  
+      :type dataset_name: str
+      :param seq_len: length of the sequence
+      :type seq_len: int
       :param chunk_size: size of batch for processing
       :type chunk_size: int
       :param out_dir: directory to save the model
       :type out_dir: str
     """
     def __init__(self, static_train_data: ds.BaseDataFrame=None, temporal_train_data: ds.BaseDataFrameGroupBy=None, 
-                 dataset_name: str=None, seq_len: int=1, chunk_size: int=32, out_dir: str=None, **kwargs):
+                 dataset_name: str=None, seq_len: int=None, num_features: int=None, static_cond_dim: int=None, chunk_size: int=32, out_dir: str=None, **kwargs):
         self.config_path = "../config/config.json"
         self.dataset_name = dataset_name
         self.seq_len = seq_len
+        self.num_ts_features = num_features
+        self.static_cond_dim = static_cond_dim
         self.static_train_data = static_train_data
         self.temporal_train_data = temporal_train_data
         self.chunk_size = chunk_size
@@ -90,9 +99,12 @@ class tsv1:
         # Stage 2 training
         dataset_name = self.dataset_name
         batch_size = config['dataset']['batch_sizes']['stage2']
-        static_cond_dim = len(self.static_train_data.columns)
+        static_cond_dim = self.static_cond_dim
         seq_len = self.seq_len
         gpu_device_ind = config['gpu_device_id']
+
+        if static_cond_dim != config['static_cond_dim'] or static_cond_dim != len(self.static_train_data.columns):
+            raise ValueError(f"static_cond_dim mismatch: {static_cond_dim} != {config['static_cond_dim']} or {len(self.static_train_data.columns)}")
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
@@ -137,9 +149,12 @@ class tsv1:
         config = self.load_config()
         dataset_name = self.dataset_name
         batch_size = config['evaluation']['batch_size']
-        static_cond_dim = len(static_condition_data.columns)
+        static_cond_dim = self.static_cond_dim
         seq_len = self.seq_len
         gpu_device_ind = config['gpu_device_id']
+
+        if static_cond_dim != config['static_cond_dim'] or static_cond_dim != len(static_condition_data.columns):
+            raise ValueError(f"static_cond_dim mismatch: {static_cond_dim} != {config['static_cond_dim']} or {len(static_condition_data.columns)}")
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
                                                  temporal_data_train=None, 
@@ -168,9 +183,12 @@ class tsv1:
         config = self.load_config()
         dataset_name = config['dataset']['dataset_name']
         batch_size = config['evaluation']['batch_size']
-        static_cond_dim = config['static_cond_dim']
+        static_cond_dim = self.static_cond_dim
         seq_len = config['seq_len']
         gpu_device_ind = config['gpu_device_id']
+
+        if static_cond_dim != config['static_cond_dim'] or static_cond_dim != len(static_condition_data.columns):
+            raise ValueError(f"static_cond_dim mismatch: {static_cond_dim} != {config['static_cond_dim']} or {len(static_condition_data.columns)}")
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
                                                  temporal_data_train=None, 
@@ -222,8 +240,37 @@ class tsv1:
         
         config['dataset']['dataset_name'] = self.dataset_name
         config['seq_len'] = self.seq_len
-        config['static_cond_dim'] = len(self.static_train_data.columns)
+        config['static_cond_dim'] = self.static_cond_dim
 
         return config
+    
+    def load_model_stage1(self, model_path: str):
+        model_stage1 = ExpStage1.load_from_checkpoint(model_path, in_channels=self.num_ts_features, input_length=self.seq_len, 
+                                               config=self.load_config(), map_location='cpu')
+        freeze(model_stage1)
+        model_stage1.eval()
 
+        # stage 1 model has the following components:
+        # encoder_l = model_stage1.encoder_l
+        # decoder_l = model_stage1.decoder_l
+        # vq_model_l = model_stage1.vq_model_l
+        # encoder_h = model_stage1.encoder_h
+        # decoder_h = model_stage1.decoder_h
+        # vq_model_h = model_stage1.vq_model_h
+        return model_stage1
 
+    def load_model_stage2(self, model_path: str):
+        model_stage2 = ExpStage2.load_from_checkpoint(model_path, dataset_name=self.dataset_name,
+                                               static_cond_dim=self.static_cond_dim,
+                                               in_channels=self.num_ts_features,
+                                               input_length=self.seq_len, 
+                                               config=self.load_config(),
+                                               use_fidelity_enhancer=False,
+                                               feature_extractor_type='rocket',
+                                               use_custom_dataset=True,
+                                               map_location='cpu',
+                                               strict=False)
+        freeze(model_stage2)
+        model_stage2.eval()
+        return model_stage2.maskgit
+    
