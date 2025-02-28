@@ -53,15 +53,19 @@ class tsv1:
         self.temporal_train_data = temporal_train_data
         self.chunk_size = chunk_size
         self.out_dir = out_dir
+
+        #### To do - Jiayu, add code to split static_train_data and temporal_train_data into static_test_data and temporal_test_data for validation in early stopping
+        self.static_test_data = None
+        self.temporal_test_data = None
+
+        ####
+        
     
     def train(self):
         """
         Train the TSV1 model
         """
-        #### To do - Jiayu, add code to split static_train_data and temporal_train_data into static_test_data and temporal_test_data for validation in early stopping
 
-
-        ####
         with open(self.config_path, "r") as f:
             model_config = json.load(f)
             f.close()
@@ -79,8 +83,8 @@ class tsv1:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=static_test_data, 
-                                                 temporal_data_test=temporal_test_data, 
+                                                 static_data_test=self.static_test_data, 
+                                                 temporal_data_test=self.temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
@@ -108,8 +112,8 @@ class tsv1:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=static_test_data, 
-                                                 temporal_data_test=temporal_test_data, 
+                                                 static_data_test=self.static_test_data, 
+                                                 temporal_data_test=self.temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
@@ -134,8 +138,8 @@ class tsv1:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=static_test_data, 
-                                                 temporal_data_test=temporal_test_data, 
+                                                 static_data_test=self.static_test_data, 
+                                                 temporal_data_test=self.temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
@@ -145,7 +149,7 @@ class tsv1:
 
         
 
-    def generate_data(self, static_condition_data: ds.BaseDataFrame):
+    def generate_ts_data(self, static_condition_data: ds.BaseDataFrame):
         config = self.load_config()
         dataset_name = self.dataset_name
         batch_size = config['evaluation']['batch_size']
@@ -179,7 +183,7 @@ class tsv1:
 
 
 
-    def generate_embeddings(self, static_condition_data: ds.BaseDataFrame):
+    def generate_embeddings(self, ts_data: ds.BaseDataFrame):
         config = self.load_config()
         dataset_name = config['dataset']['dataset_name']
         batch_size = config['evaluation']['batch_size']
@@ -187,13 +191,11 @@ class tsv1:
         seq_len = config['seq_len']
         gpu_device_ind = config['gpu_device_id']
 
-        if static_cond_dim != config['static_cond_dim'] or static_cond_dim != len(static_condition_data.columns):
-            raise ValueError(f"static_cond_dim mismatch: {static_cond_dim} != {config['static_cond_dim']} or {len(static_condition_data.columns)}")
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
                                                  temporal_data_train=None, 
-                                                 static_data_test=static_condition_data, 
-                                                 temporal_data_test=None, 
+                                                 static_data_test=None, 
+                                                 temporal_data_test=ts_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
