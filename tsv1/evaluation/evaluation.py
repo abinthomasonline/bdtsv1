@@ -38,6 +38,7 @@ class Evaluation(nn.Module):
     - t-SNE
     """
     def __init__(self, 
+                 saved_models_dir: str,
                  dataset_name: str,
                  static_cond_dim: int,
                  in_channels:int,
@@ -50,6 +51,7 @@ class Evaluation(nn.Module):
                  use_custom_dataset:bool=True
                  ):
         super().__init__()
+        self.saved_models_dir = saved_models_dir
         self.dataset_name = dataset_name
         self.device = torch.device(device)
         self.config = config
@@ -66,7 +68,7 @@ class Evaluation(nn.Module):
         self.ts_len = self.config['seq_len']  # time series length (seq_len)
 
         # load the stage2 model
-        self.stage2 = ExpStage2.load_from_checkpoint(os.path.join('saved_models', f'stage2-{dataset_name}.ckpt'), 
+        self.stage2 = ExpStage2.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage2-{dataset_name}.ckpt'), 
                                                       dataset_name=dataset_name,
                                                       static_cond_dim=static_cond_dim,
                                                       in_channels=in_channels,
