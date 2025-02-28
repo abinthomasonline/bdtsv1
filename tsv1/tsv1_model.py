@@ -36,13 +36,12 @@ class tsv1:
       :type out_dir: str
     """
     def __init__(self, static_train_data: ds.BaseDataFrame=None, temporal_train_data: ds.BaseDataFrameGroupBy=None, 
-                 static_condition_data: ds.BaseDataFrame=None, dataset_name: str=None, seq_len: int=1, chunk_size: int=32, out_dir: str=None, **kwargs):
+                 dataset_name: str=None, seq_len: int=1, chunk_size: int=32, out_dir: str=None, **kwargs):
         self.config_path = "../config/config.json"
         self.dataset_name = dataset_name
         self.seq_len = seq_len
         self.static_train_data = static_train_data
         self.temporal_train_data = temporal_train_data
-        self.static_condition_data = static_condition_data
         self.chunk_size = chunk_size
         self.out_dir = out_dir
     
@@ -134,23 +133,24 @@ class tsv1:
 
         
 
-    def generate_data(self):
+    def generate_data(self, static_condition_data: ds.BaseDataFrame):
         config = self.load_config()
         dataset_name = self.dataset_name
         batch_size = config['evaluation']['batch_size']
-        static_cond_dim = config['static_cond_dim']
+        static_cond_dim = len(static_condition_data.columns)
         seq_len = self.seq_len
         gpu_device_ind = config['gpu_device_id']
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
                                                  temporal_data_train=None, 
-                                                 static_data_test=self.static_condition_data, 
+                                                 static_data_test=static_condition_data, 
                                                  temporal_data_test=None, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
 
-        # To do - Jiayu, check if this can be loaded properly
+        #### To do - Jiayu, check if this can be loaded properly
+        # loop : convert DF to tensor
         static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
 
         # generate synthetic data
@@ -158,12 +158,13 @@ class tsv1:
 
         # clean memory
         torch.cuda.empty_cache()
+        ####
 
         return syn_data
 
 
 
-    def generate_embeddings(self):
+    def generate_embeddings(self, static_condition_data: ds.BaseDataFrame):
         config = self.load_config()
         dataset_name = config['dataset']['dataset_name']
         batch_size = config['evaluation']['batch_size']
@@ -173,13 +174,13 @@ class tsv1:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
                                                  temporal_data_train=None, 
-                                                 static_data_test=self.static_condition_data, 
+                                                 static_data_test=static_condition_data, 
                                                  temporal_data_test=None, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
         
-        # To do - Jiayu, check if this can be loaded properly
+        #### To do - Jiayu, check if this can be loaded properly
         ts_data = torch.from_numpy(test_data_loader.dataset.TS)
 
         # generate embeddings
@@ -187,6 +188,7 @@ class tsv1:
 
         # clean memory
         torch.cuda.empty_cache()
+        ####
 
         return low_freq_embeddings, high_freq_embeddings
 
@@ -220,6 +222,7 @@ class tsv1:
         
         config['dataset']['dataset_name'] = self.dataset_name
         config['seq_len'] = self.seq_len
+        config['static_cond_dim'] = len(self.static_train_data.columns)
 
         return config
 
