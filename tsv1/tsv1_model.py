@@ -32,10 +32,14 @@ class tsv1:
       :type config_path: str
       :param chunk_size: size of batch for processing
       :type chunk_size: int
+      :param out_dir: directory to save the model
+      :type out_dir: str
     """
     def __init__(self, static_train_data: ds.BaseDataFrame=None, temporal_train_data: ds.BaseDataFrameGroupBy=None, 
-                 static_condition_data: ds.BaseDataFrame=None, config_path: str=None, chunk_size: int=32, out_dir: str=None, **kwargs):
-        self.config_path = config_path
+                 static_condition_data: ds.BaseDataFrame=None, dataset_name: str=None, seq_len: int=1, chunk_size: int=32, out_dir: str=None, **kwargs):
+        self.config_path = "../config/config.json"
+        self.dataset_name = dataset_name
+        self.seq_len = seq_len
         self.static_train_data = static_train_data
         self.temporal_train_data = temporal_train_data
         self.static_condition_data = static_condition_data
@@ -58,9 +62,9 @@ class tsv1:
         config = self.load_config()
 
         # Stage1 training
-        dataset_name = config['dataset']['dataset_name']
+        dataset_name = self.dataset_name
         batch_size = config['dataset']['batch_sizes']['stage1']
-        seq_len = config['seq_len']
+        seq_len = self.seq_len
         gpu_device_ind = config['gpu_device_id']
 
         
@@ -85,10 +89,10 @@ class tsv1:
         config = self.load_config()
 
         # Stage 2 training
-        dataset_name = config['dataset']['dataset_name']
+        dataset_name = self.dataset_name
         batch_size = config['dataset']['batch_sizes']['stage2']
         static_cond_dim = len(self.static_train_data.columns)
-        seq_len = config['seq_len']
+        seq_len = self.seq_len
         gpu_device_ind = config['gpu_device_id']
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
@@ -110,9 +114,9 @@ class tsv1:
         """
         config = self.load_config()
         # Stage1 training
-        dataset_name = config['dataset']['dataset_name']
+        dataset_name = self.dataset_name
         batch_size = config['dataset']['batch_sizes']['stage1']
-        seq_len = config['seq_len']
+        seq_len = self.seq_len
         gpu_device_ind = config['gpu_device_id']
 
         
@@ -131,21 +135,11 @@ class tsv1:
         
 
     def generate_data(self):
-        with open(self.config_path, "r") as f:
-            model_config = json.load(f)
-            f.close()
-
-        if 'seq_len' in model_config:
-            config = model_config
-        else:
-            config = {}
-            for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
-
-
-        dataset_name = config['dataset']['dataset_name']
+        config = self.load_config()
+        dataset_name = self.dataset_name
         batch_size = config['evaluation']['batch_size']
         static_cond_dim = config['static_cond_dim']
-        seq_len = config['seq_len']
+        seq_len = self.seq_len
         gpu_device_ind = config['gpu_device_id']
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
@@ -197,10 +191,9 @@ class tsv1:
         return low_freq_embeddings, high_freq_embeddings
 
 
-    def save(self,):
-        config = self.load_config() 
+    def save(self):
         os.makedirs(self.out_dir, exist_ok=True)
-        dataset_name = config['dataset']['dataset_name']
+        dataset_name = self.dataset_name
         model_save_path = os.path.join(f'saved_models', f'stage1-{dataset_name}.ckpt')
         if os.path.exists(model_save_path): 
             shutil.copy(model_save_path, self.out_dir)
@@ -224,6 +217,9 @@ class tsv1:
         else:
             config = {}
             for d in (model_config['data'], model_config['train'], model_config['model'], model_config['generate']): config.update(d)
+        
+        config['dataset']['dataset_name'] = self.dataset_name
+        config['seq_len'] = self.seq_len
 
         return config
 
