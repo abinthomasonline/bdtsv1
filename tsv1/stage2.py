@@ -23,7 +23,7 @@ from tsv1.evaluation.evaluation import Evaluation
 from tsv1.utils import get_root_dir, load_yaml_param_settings, str2bool
 
 from pytorch_lightning.callbacks import LearningRateMonitor
-from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
 os.environ['WANDB_MODE'] = 'disabled'
@@ -86,9 +86,21 @@ def train_stage2(config: dict,
         mode='min'  # Because we want to minimize the loss
     )
 
+    checkpoint_callback = ModelCheckpoint(
+        monitor="val/loss",  # Metric to monitor
+        mode="min",  # Save the model with minimum 'val_loss'
+        dirpath="./saved_models/",  # Directory to save checkpoints
+        filename="best-stage2-model-{epoch:02d}-{val/loss:.2f}"  # Custom filename format
+    )
+
+    if config['early_stopping'] == True:
+        callbacks = [LearningRateMonitor(logging_interval='step'), checkpoint_callback, early_stop_callback]
+    else:
+        callbacks = [LearningRateMonitor(logging_interval='step'), checkpoint_callback]
+        
     trainer = pl.Trainer(logger=wandb_logger,
                          enable_checkpointing=False,
-                         callbacks=[LearningRateMonitor(logging_interval='step'), early_stop_callback],
+                         callbacks=callbacks,
                          max_steps=config['trainer_params']['max_steps']['stage2'],
                          devices=device,
                          accelerator=accelerator,

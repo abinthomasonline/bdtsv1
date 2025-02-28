@@ -73,6 +73,7 @@
     }
   },
   "train": {
+    "early_stopping": true,
     "gpu_device_id": 1,
     "static_cond_dim": 6,
     "seq_len": 143,
