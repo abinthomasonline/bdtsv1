@@ -2,6 +2,10 @@ import json
 import os
 import shutil
 
+import numpy as np
+import pandas as pd
+import torch
+
 from tsv1.stage1 import *
 from tsv1.stage2 import *
 from tsv1.generate import *
@@ -10,6 +14,7 @@ from tsv1.experiments.exp_stage1 import ExpStage1
 from tsv1.experiments.exp_stage2 import ExpStage2
 
 from datapip import data_struct as ds
+from datapip.algo.basic import uniform_like
 
 
 class tsv1:
@@ -57,6 +62,12 @@ class tsv1:
         """
         Train the TSV1 model
         """
+        is_test = ds.BaseSeries.from_uniform(True, index=self.static_train_data.index)
+        is_test = uniform_like(is_test, low=0, high=1) <= 0.2
+        static_test_data = self.static_train_data[is_test]
+        temporal_test_data = self.temporal_train_data.filter(lambda g, d: is_test[g])
+
+        new_model_config_save_path = self.config_path
 
         with open(self.config_path, "r") as f:
             model_config = json.load(f)
@@ -152,30 +163,53 @@ class tsv1:
         if static_cond_dim != config['static_cond_dim'] or static_cond_dim != len(static_condition_data.columns):
             raise ValueError(f"static_cond_dim mismatch: {static_cond_dim} != {config['static_cond_dim']} or {len(static_condition_data.columns)}")
 
-        dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
-                                                 temporal_data_train=None, 
-                                                 static_data_test=static_condition_data, 
-                                                 temporal_data_test=None, 
+        dataset_importer = DatasetImporterCustom(config=config, static_data_train=None,
+                                                 temporal_data_train=None,
+                                                 static_data_test=static_condition_data,
+                                                 temporal_data_test=None,
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
-        
+
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
 
-        #### To do - Jiayu, check if this can be loaded properly
-        # loop : convert DF to tensor
-        static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
+        index = test_data_loader.dataset.SC.index
+        outputs = []
+        if self.temporal_train_data.columns.nlevels > 1:
+            index_column = tuple(["$index"] + [""] * (self.temporal_train_data.columns.nlevels - 1))
+            all_columns = [index_column, *self.temporal_train_data.columns]
+            all_columns = ds.BaseIndex.registry[static_condition_data.data_struct].from_tuples(all_columns)
+        else:
+            all_columns = ["$index", *self.temporal_train_data.columns]
+            index_column = "$index"
 
-        # generate synthetic data
-        syn_data = generate_data(config, self.out_dir, dataset_name, static_cond_dim, static_conditions, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
+        for st in range(0, len(index), self.chunk_size):
+            static_conditions = torch.from_numpy(
+                test_data_loader.dataset.SC.get_by_index(index[st:st + self.chunk_size]).values
+            )
 
-        # clean memory
-        torch.cuda.empty_cache()
-        ####
+            # generate synthetic data
+            syn_data = generate_data(
+                config, self.out_dir, dataset_name, static_cond_dim, static_conditions, gpu_device_ind,
+                use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True
+            )
 
-        return syn_data
+            # clean memory
+            torch.cuda.empty_cache()
+            ####
+            syn_data = syn_data.view(syn_data.shape[0], self.seq_len, -1)
+            syn_data = torch.cat([
+                torch.arange(syn_data.shape[0]).view(-1, 1, 1).repeat(1, syn_data.shape[1], 1) + st, syn_data
+            ], dim=-1).view(-1, syn_data.shape[-1] + 1)
+            outputs.append(static_condition_data.from_pandas(
+                pd.DataFrame(syn_data.numpy(), columns=all_columns)
+            ))
+
+        outputs = static_condition_data.concat(outputs, ignore_index=True, axis=0)
+
+        return outputs.groupby(index_column)[self.temporal_train_data.columns]
 
 
 
-    def generate_embeddings(self, ts_data: ds.BaseDataFrame):
+    def generate_embeddings(self, ts_data: ds.BaseDataFrameGroupBy):
         config = self.load_config()
         dataset_name = config['dataset']['dataset_name']
         batch_size = config['evaluation']['batch_size']
@@ -184,25 +218,36 @@ class tsv1:
         gpu_device_ind = config['gpu_device_id']
 
 
-        dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
+        index = ts_data.groups
+        dataset_importer = DatasetImporterCustom(config=config, static_data_train=None,
                                                  temporal_data_train=None, 
-                                                 static_data_test=None, 
+                                                 static_data_test=ds.BaseSeries.registry[ts_data.data_struct].from_uniform(0, index=index)[[]],
                                                  temporal_data_test=ts_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
-        
+
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
-        
-        #### To do - Jiayu, check if this can be loaded properly
-        ts_data = torch.from_numpy(test_data_loader.dataset.TS)
+        low_outputs = []
+        high_outputs = []
+        for st in range(0, len(index), self.chunk_size):
+            group_index = index[st:st + self.chunk_size]
+            ts_data = torch.from_numpy(test_data_loader.dataset.TS.get_by_index(group_index).values)
 
-        # generate embeddings
-        low_freq_embeddings, high_freq_embeddings = generate_embeddings(config, self.out_dir, dataset_name, static_cond_dim, ts_data, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
+            # generate embeddings
+            low_freq_embeddings, high_freq_embeddings = generate_embeddings(
+                config, self.out_dir, dataset_name, static_cond_dim, ts_data, gpu_device_ind,
+                use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True
+            )
 
-        # clean memory
-        torch.cuda.empty_cache()
-        ####
+            # clean memory
+            torch.cuda.empty_cache()
+            ####
+            low_freq_embeddings = ds.BaseDataFrame.registry[index.data_struct].from_pandas(pd.DataFrame(low_freq_embeddings), index=group_index)
+            high_freq_embeddings =  ds.BaseDataFrame.registry[index.data_struct].from_pandas(pd.DataFrame(high_freq_embeddings), index=group_index)
+            low_outputs.append(low_freq_embeddings)
+            high_outputs.append(high_freq_embeddings)
 
-        return low_freq_embeddings, high_freq_embeddings
+        return (ds.BaseDataFrame.registry[index.data_struct].concat(low_outputs, axis=0),
+                ds.BaseDataFrame.registry[index.data_struct].concat(high_outputs, axis=0))
 
 
     # def save(self):

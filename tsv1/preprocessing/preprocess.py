@@ -42,7 +42,6 @@ class DatasetImporterCustom(object):
         if static_data_test is not None:
             self.process_data('test', static_data_test, temporal_data_test, data_scaling)
 
-    # To do - Jiayu, modify this function to use datapip
     def calculate_statistics(self, temporal_data: ds.BaseDataFrameGroupBy):
         """Calculate mean and std in batches"""
         sum_x = 0
@@ -50,10 +49,18 @@ class DatasetImporterCustom(object):
         total_count = 0
         
         # First pass: calculate mean
-        chunks = pd.read_csv(data_path, skiprows=1, header=None, chunksize=self.batch_size)
-        for chunk in chunks:
-            chunk = chunk.astype('float32')
-            ts = chunk.iloc[:, self.static_cond_dim:].values
+        all_index = temporal_data.groups
+        n_temporal_columns = len(temporal_data.columns)
+        for i in range(0, all_index.shape[0], self.batch_size):
+            # Split into time series and static conditions
+            batch_ids = all_index[i:i + self.batch_size]
+            if n_temporal_columns > 0:
+                ts = np.zeros((batch_ids.shape[0], self.seq_len * n_temporal_columns), dtype='float32')
+                for j, sc_id in enumerate(batch_ids):
+                    g_data = temporal_data.get_group(sc_id).values.flatten()
+                    ts[j, :g_data.shape[-1]] = g_data
+            else:
+                ts = np.zeros((batch_ids.shape[0], 0), dtype='float32')
             if ts.shape[1] // self.seq_len != 0:
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
