@@ -7,6 +7,7 @@ import traceback
 import warnings
 import shutil
 
+import numpy as np
 import pandas as pd
 import torch
 
@@ -163,26 +164,16 @@ class tsv1:
         if static_cond_dim != config['static_cond_dim'] or static_cond_dim != len(static_condition_data.columns):
             raise ValueError(f"static_cond_dim mismatch: {static_cond_dim} != {config['static_cond_dim']} or {len(static_condition_data.columns)}")
 
-        dataset_importer = DatasetImporterCustom(config=config, static_data_train=None, 
-                                                 temporal_data_train=None, 
-                                                 static_data_test=static_condition_data, 
-                                                 temporal_data_test=None, 
+        dataset_importer = DatasetImporterCustom(config=config, static_data_train=None,
+                                                 temporal_data_train=None,
+                                                 static_data_test=static_condition_data,
+                                                 temporal_data_test=None,
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
-        
+
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
 
-        static_conditions = torch.from_numpy(test_data_loader.dataset.SC.values)
-
-        # generate synthetic data
-        syn_data = generate_data(config, dataset_name, static_cond_dim, static_conditions, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
-
-        # clean memory
-        torch.cuda.empty_cache()
-        ####
-        syn_data = syn_data.view(syn_data.shape[0], self.seq_len, -1)
-        syn_data = torch.cat([
-            torch.arange(syn_data.shape[0]).view(-1, 1, 1).repeat(1, syn_data.shape[1], 1), syn_data
-        ], dim=-1).view(-1, syn_data.shape[-1] + 1)
+        index = test_data_loader.dataset.SC.index
+        outputs = []
         if self.temporal_train_data.columns.nlevels > 1:
             index_column = tuple(["$index"] + [""] * (self.temporal_train_data.columns.nlevels - 1))
             all_columns = [index_column, *self.temporal_train_data.columns]
@@ -190,9 +181,32 @@ class tsv1:
         else:
             all_columns = ["$index", *self.temporal_train_data.columns]
             index_column = "$index"
-        return static_condition_data.from_pandas(
-            pd.DataFrame(syn_data.values, columns=all_columns)
-        ).groupby(index_column)[self.temporal_train_data.columns]
+
+        for st in range(0, len(index), self.chunk_size):
+            static_conditions = torch.from_numpy(
+                test_data_loader.dataset.SC.get_by_index(index[st:st + self.chunk_size]).values
+            )
+
+            # generate synthetic data
+            syn_data = generate_data(
+                config, dataset_name, static_cond_dim, static_conditions, gpu_device_ind,
+                use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True
+            )
+
+            # clean memory
+            torch.cuda.empty_cache()
+            ####
+            syn_data = syn_data.view(syn_data.shape[0], self.seq_len, -1)
+            syn_data = torch.cat([
+                torch.arange(syn_data.shape[0]).view(-1, 1, 1).repeat(1, syn_data.shape[1], 1) + st, syn_data
+            ], dim=-1).view(-1, syn_data.shape[-1] + 1)
+            outputs.append(static_condition_data.from_pandas(
+                pd.DataFrame(syn_data.numpy(), columns=all_columns)
+            ))
+
+        outputs = static_condition_data.concat(outputs, ignore_index=True, axis=0)
+
+        return outputs.groupby(index_column)[self.temporal_train_data.columns]
 
 
 
