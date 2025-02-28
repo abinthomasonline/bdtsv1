@@ -1,10 +1,5 @@
 import json
-import logging
 import os
-import signal
-import sys
-import traceback
-import warnings
 import shutil
 
 import numpy as np
@@ -14,15 +9,12 @@ import torch
 from tsv1.stage1 import *
 from tsv1.stage2 import *
 from tsv1.generate import *
-from tsv1.utils import get_root_dir
 from tsv1.utils import freeze
-from tsv1.exp_stage1 import ExpStage1
-from tsv1.exp_stage2 import ExpStage2
+from tsv1.experiments.exp_stage1 import ExpStage1
+from tsv1.experiments.exp_stage2 import ExpStage2
 
 from datapip import data_struct as ds
 from datapip.algo.basic import uniform_like
-
-warnings.filterwarnings('ignore')
 
 
 class tsv1:
@@ -101,7 +93,7 @@ class tsv1:
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
                                                for kind in ['train', 'test']]
         
-        train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
+        train_stage1(config, self.out_dir, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
         model_config['data']['dataset'] = config['dataset']
         os.remove(new_model_config_save_path)
         with open(new_model_config_save_path, "w") as f:
@@ -130,7 +122,7 @@ class tsv1:
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
                                                for kind in ['train', 'test']]
         
-        train_stage2(config, dataset_name, static_cond_dim, train_data_loader, test_data_loader, gpu_device_ind,
+        train_stage2(config, self.out_dir, dataset_name, static_cond_dim, train_data_loader, test_data_loader, gpu_device_ind,
                  feature_extractor_type='rocket', use_custom_dataset=True)
         
 
@@ -156,7 +148,7 @@ class tsv1:
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
                                                for kind in ['train', 'test']]
         
-        train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
+        train_stage1(config, self.out_dir, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
 
         
 
@@ -196,7 +188,7 @@ class tsv1:
 
             # generate synthetic data
             syn_data = generate_data(
-                config, dataset_name, static_cond_dim, static_conditions, gpu_device_ind,
+                config, self.out_dir, dataset_name, static_cond_dim, static_conditions, gpu_device_ind,
                 use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True
             )
 
@@ -241,7 +233,10 @@ class tsv1:
             ts_data = torch.from_numpy(test_data_loader.dataset.TS.get_by_index(group_index).values)
 
             # generate embeddings
-            low_freq_embeddings, high_freq_embeddings = generate_embeddings(config, dataset_name, static_cond_dim, ts_data, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
+            low_freq_embeddings, high_freq_embeddings = generate_embeddings(
+                config, self.out_dir, dataset_name, static_cond_dim, ts_data, gpu_device_ind,
+                use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True
+            )
 
             # clean memory
             torch.cuda.empty_cache()
@@ -255,21 +250,21 @@ class tsv1:
                 ds.BaseDataFrame.registry[index.data_struct].concat(high_outputs, axis=0))
 
 
-    def save(self):
-        os.makedirs(self.out_dir, exist_ok=True)
-        dataset_name = self.dataset_name
-        model_save_path = os.path.join(f'saved_models', f'stage1-{dataset_name}.ckpt')
-        if os.path.exists(model_save_path): 
-            shutil.copy(model_save_path, self.out_dir)
-            print(f'Stage 1 model saved to {self.out_dir}')
-        else:
-            print(f'Stage 1 model not found at {model_save_path}')
-        model_save_path = os.path.join(f'saved_models', f'stage2-{dataset_name}.ckpt')
-        if os.path.exists(model_save_path):
-            shutil.copy(model_save_path, self.out_dir)
-            print(f'Stage 2 model saved to {self.out_dir}')
-        else:
-            print(f'Stage 2 model not found at {model_save_path}')
+    # def save(self):
+    #     os.makedirs(self.out_dir, exist_ok=True)
+    #     dataset_name = self.dataset_name
+    #     model_save_path = os.path.join(f'saved_models', f'stage1-{dataset_name}.ckpt')
+    #     if os.path.exists(model_save_path): 
+    #         shutil.copy(model_save_path, self.out_dir)
+    #         print(f'Stage 1 model saved to {self.out_dir}')
+    #     else:
+    #         print(f'Stage 1 model not found at {model_save_path}')
+    #     model_save_path = os.path.join(f'saved_models', f'stage2-{dataset_name}.ckpt')
+    #     if os.path.exists(model_save_path):
+    #         shutil.copy(model_save_path, self.out_dir)
+    #         print(f'Stage 2 model saved to {self.out_dir}')
+    #     else:
+    #         print(f'Stage 2 model not found at {model_save_path}')
     
     def load_config(self):
         with open(self.config_path, "r") as f:

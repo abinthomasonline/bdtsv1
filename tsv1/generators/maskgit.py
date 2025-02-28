@@ -26,6 +26,7 @@ class MaskGIT(nn.Module):
     """
 
     def __init__(self,
+                 saved_models_dir: str,
                  dataset_name: str,
                  static_cond_dim: int,
                  in_channels:int,
@@ -35,6 +36,7 @@ class MaskGIT(nn.Module):
                  config: dict,
                  **kwargs):
         super().__init__()
+        self.saved_models_dir = saved_models_dir
         self.choice_temperature_l = choice_temperatures['lf']
         self.choice_temperature_h = choice_temperatures['hf']
         self.T = T
@@ -48,7 +50,7 @@ class MaskGIT(nn.Module):
         self.gamma = self.gamma_func("cosine")
 
         # load the stage1 model
-        self.stage1 = ExpStage1.load_from_checkpoint(os.path.join('saved_models', f'stage1-{dataset_name}.ckpt'), 
+        self.stage1 = ExpStage1.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage1-{dataset_name}.ckpt'), 
                                                      in_channels=in_channels,
                                                      input_length=input_length, 
                                                      config=config,

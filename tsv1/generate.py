@@ -35,10 +35,12 @@ def load_args():
     parser.add_argument('--use_fidelity_enhancer', type=str2bool, default=False, help='Use the fidelity enhancer')
     parser.add_argument('--feature_extractor_type', type=str, default='rocket', help='supervised_fcn | rocket')
     parser.add_argument('--use_custom_dataset', type=str2bool, default=False, help='Using a custom dataset, then set it to True.')
+    parser.add_argument('--saved_models_dir', default='')
     return parser.parse_args()
 
 
 def generate_data(config: dict,
+             saved_models_dir: str,
              dataset_name: str,
              static_cond_dim: int,
              static_conditions,
@@ -75,7 +77,7 @@ def generate_data(config: dict,
 
     # conditional sampling
     # print('evaluating...')
-    evaluation = Evaluation(dataset_name, static_cond_dim, in_channels, input_length, device, config,
+    evaluation = Evaluation(saved_models_dir, dataset_name, static_cond_dim, in_channels, input_length, device, config,
                             use_fidelity_enhancer=use_fidelity_enhancer,
                             feature_extractor_type=feature_extractor_type,
                             use_custom_dataset=use_custom_dataset).to(device)
@@ -94,6 +96,7 @@ def generate_data(config: dict,
 
 
 def generate_embeddings(config: dict,
+             saved_models_dir: str,
              dataset_name: str,
              static_cond_dim: int,
              ts_data,
@@ -115,7 +118,7 @@ def generate_embeddings(config: dict,
         # device = gpu_device_ind
         device = torch.device('cuda:0')
 
-    evaluation = Evaluation(dataset_name, static_cond_dim, in_channels, input_length, device, config,
+    evaluation = Evaluation(saved_models_dir, dataset_name, static_cond_dim, in_channels, input_length, device, config,
                             use_fidelity_enhancer=use_fidelity_enhancer,
                             feature_extractor_type=feature_extractor_type,
                             use_custom_dataset=use_custom_dataset).to(device)
@@ -139,6 +142,7 @@ if __name__ == '__main__':
     static_cond_dim = config['static_cond_dim']
     seq_len = config['seq_len']
     gpu_device_ind = config['gpu_device_id']
+    saved_models_dir = args.saved_models_dir
     dataset_importer = DatasetImporterCustom(config=config, train_data_path=None,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
@@ -146,7 +150,7 @@ if __name__ == '__main__':
     static_conditions = torch.from_numpy(test_data_loader.dataset.SC)
     # print(static_conditions.shape)
     # generate synthetic data
-    generate_data(config, dataset_name, static_cond_dim, static_conditions, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
+    generate_data(config, saved_models_dir, dataset_name, static_cond_dim, static_conditions, gpu_device_ind, use_fidelity_enhancer=False, feature_extractor_type='rocket', use_custom_dataset=True)
 
     # clean memory
     torch.cuda.empty_cache()

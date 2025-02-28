@@ -12,6 +12,7 @@ from tsv1.utils import linear_warmup_cosine_annealingLR
 
 class ExpStage2(pl.LightningModule):
     def __init__(self,
+                 saved_models_dir: str,
                  dataset_name: str,
                  static_cond_dim: int,
                  in_channels:int,
@@ -26,7 +27,7 @@ class ExpStage2(pl.LightningModule):
         self.config = config
         self.use_custom_dataset = use_custom_dataset
 
-        self.maskgit = MaskGIT(dataset_name, static_cond_dim, in_channels, input_length, **config['MaskGIT'], config=config)
+        self.maskgit = MaskGIT(saved_models_dir, dataset_name, static_cond_dim, in_channels, input_length, **config['MaskGIT'], config=config)
         # Temporarily disable the metrics function during training
         # self.metrics = Metrics(config, dataset_name, feature_extractor_type=feature_extractor_type, use_custom_dataset=use_custom_dataset)
 

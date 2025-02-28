@@ -29,6 +29,7 @@ def load_args():
     parser.add_argument('--dataset_names', nargs='+', help="e.g., Adiac Wafer Crop`.", default='')
     parser.add_argument('--train_data_path', default='')
     parser.add_argument('--test_data_path', default='')
+    parser.add_argument('--saved_models_dir', default='')
     # parser.add_argument('--static_cond_dim', default=1, type=int, help='Dimension of Static Conditions')
     # parser.add_argument('--seq_len', default=100, type=int, help='Length of sequence')
     # parser.add_argument('--gpu_device_ind', nargs='+', default=[0], type=int, help='Indices of GPU devices to use.')
@@ -37,6 +38,7 @@ def load_args():
 
 
 def train_stage1(config: dict,
+                 saved_models_dir: str,
                  dataset_name: str,
                  train_data_loader: DataLoader,
                  test_data_loader: DataLoader,
@@ -94,9 +96,9 @@ def train_stage1(config: dict,
     wandb.finish()
 
     print('saving the models...')
-    if not os.path.isdir(get_root_dir().joinpath('saved_models')):
-            os.mkdir(get_root_dir().joinpath('saved_models'))
-    trainer.save_checkpoint(os.path.join(f'saved_models', f'stage1-{dataset_name}.ckpt'))
+    if not os.path.isdir(saved_models_dir):
+        os.mkdir(saved_models_dir)
+    trainer.save_checkpoint(os.path.join(saved_models_dir, f'stage1-{dataset_name}.ckpt'))
 
 
 if __name__ == '__main__':
@@ -111,6 +113,7 @@ if __name__ == '__main__':
     static_cond_dim = config['static_cond_dim']
     seq_len = config['seq_len']
     gpu_device_ind = config['gpu_device_id']
+    saved_models_dir = args.saved_models_dir
     dataset_importer = DatasetImporterCustom(config=config, train_data_path=args.train_data_path,
                                              test_data_path=args.test_data_path, static_cond_dim=static_cond_dim,
                                              seq_len=seq_len, **config['dataset'])
@@ -125,6 +128,6 @@ if __name__ == '__main__':
         train_data_loader = None
         test_data_loader = build_custom_data_pipeline(batch_size, dataset_importer, config, 'test')
         
-    train_stage1(config, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
+    train_stage1(config, saved_models_dir, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
 
 
