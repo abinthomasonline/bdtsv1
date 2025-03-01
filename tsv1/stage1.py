@@ -80,6 +80,7 @@ def train_stage1(config: dict,
     checkpoint_callback = ModelCheckpoint(
         monitor="val/loss",  # Metric to monitor
         mode="min",  # Save the model with minimum 'val_loss'
+        save_top_k=1, # Save the best model
         dirpath="./saved_models/",  # Directory to save checkpoints
         filename="best-stage1-model-{epoch:02d}-{val/loss:.2f}"  # Custom filename format
     )

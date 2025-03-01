@@ -97,7 +97,7 @@ class tsv1:
         model_config['data']['dataset'] = config['dataset']
         os.remove(new_model_config_save_path)
         with open(new_model_config_save_path, "w") as f:
-            json.dump(model_config, f)
+            json.dump(model_config, f, indent=4)
 
         
         # load training configs for Stage2
