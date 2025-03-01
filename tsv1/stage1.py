@@ -82,7 +82,7 @@ def train_stage1(config: dict,
         mode="min",  # Save the model with minimum 'val_loss'
         save_top_k=1, # Save the best model
         dirpath="./saved_models/",  # Directory to save checkpoints
-        filename="best-stage1-model-{epoch:02d}-{val/loss:.2f}"  # Custom filename format
+        filename="best-model-stage1"  # Custom filename format
     )
 
     if config['early_stopping'] == True:
