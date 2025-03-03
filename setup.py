@@ -25,7 +25,7 @@ setuptools.setup(
         'pytorch-lightning>=2.3.1',
         'seaborn',
         'scipy>=1.14.0',
-        'datapip'
+        # 'datapip'
     ],
     python_requires='>=3.8',
     classifiers=[
