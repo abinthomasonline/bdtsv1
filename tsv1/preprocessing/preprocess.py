@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
 
-from datapip import data_struct as ds
+# from datapip import data_struct as ds
 
 # Change this import to absolute import
 from ..utils import get_root_dir
