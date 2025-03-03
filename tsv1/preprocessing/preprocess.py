@@ -12,7 +12,7 @@ from torch.utils.data import Dataset
 from datapip import data_struct as ds
 
 # Change this import to absolute import
-from tsv1.utils import get_root_dir
+from ..utils import get_root_dir
 
 
 

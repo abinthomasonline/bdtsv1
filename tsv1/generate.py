@@ -13,13 +13,13 @@ import wandb
 import numpy as np
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
-from tsv1.preprocessing.data_pipeline import build_custom_data_pipeline
-from tsv1.preprocessing.preprocess import DatasetImporterCustom
+from .preprocessing.data_pipeline import build_custom_data_pipeline
+from .preprocessing.preprocess import DatasetImporterCustom
 import pandas as pd
 import json
 
-from tsv1.evaluation.evaluation import Evaluation
-from tsv1.utils import get_root_dir, load_yaml_param_settings, str2bool
+from .evaluation.evaluation import Evaluation
+from .utils import get_root_dir, load_yaml_param_settings, str2bool
 
 os.environ['WANDB_MODE'] = 'disabled'
 def load_args():

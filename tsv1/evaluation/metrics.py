@@ -12,12 +12,12 @@ from supervised_FCN_2.example_pretrained_model_loading import load_pretrained_FC
 from supervised_FCN_2.example_compute_FID import calculate_fid
 from supervised_FCN_2.example_compute_IS import calculate_inception_score
 # from generators.sample import unconditional_sample, conditional_sample
-from tsv1.generators.sample import static_condition_sample
+from ..generators.sample import static_condition_sample
 
-from tsv1.evaluation.rocket_functions import generate_kernels, apply_kernels
-from tsv1.preprocessing.preprocess_ucr import DatasetImporterUCR, DatasetImporterCustom
-from tsv1.utils import freeze, remove_outliers
-from tsv1.evaluation.stat_metrics import marginal_distribution_difference, auto_correlation_difference, skewness_difference, kurtosis_difference
+from ..evaluation.rocket_functions import generate_kernels, apply_kernels
+from ..preprocessing.preprocess_ucr import DatasetImporterUCR, DatasetImporterCustom
+from ..utils import freeze, remove_outliers
+from ..evaluation.stat_metrics import marginal_distribution_difference, auto_correlation_difference, skewness_difference, kurtosis_difference
 
 
 @torch.no_grad()

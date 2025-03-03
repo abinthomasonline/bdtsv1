@@ -12,11 +12,11 @@ from einops import rearrange
 from pytorch_lightning.loggers import WandbLogger
 import pytorch_lightning as pl
 
-from tsv1.evaluation.rocket_functions import MiniRocketTransform
-from tsv1.evaluation.metrics import Metrics
-from tsv1.generators.fidelity_enhancer import FidelityEnhancer
-from tsv1.experiments.exp_stage2 import ExpStage2
-from tsv1.utils import freeze, zero_pad_low_freq, zero_pad_high_freq, linear_warmup_cosine_annealingLR, time_to_timefreq
+from ..evaluation.rocket_functions import MiniRocketTransform
+from ..evaluation.metrics import Metrics
+from ..generators.fidelity_enhancer import FidelityEnhancer
+from ..experiments.exp_stage2 import ExpStage2
+from ..utils import freeze, zero_pad_low_freq, zero_pad_high_freq, linear_warmup_cosine_annealingLR, time_to_timefreq
 
 
 class ExpFidelityEnhancer(pl.LightningModule):

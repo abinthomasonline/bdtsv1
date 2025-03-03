@@ -5,9 +5,9 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 import wandb
 import pytorch_lightning as pl
 
-from tsv1.evaluation.metrics import Metrics, sample
-from tsv1.generators.maskgit import MaskGIT
-from tsv1.utils import linear_warmup_cosine_annealingLR
+from ..evaluation.metrics import Metrics, sample
+from ..generators.maskgit import MaskGIT
+from ..utils import linear_warmup_cosine_annealingLR
 
 
 class ExpStage2(pl.LightningModule):

@@ -11,13 +11,13 @@ from collections import deque
 
 from einops import repeat, rearrange
 from typing import Callable
-from tsv1.generators.bidirectional_transformer import BidirectionalTransformer
+from ..generators.bidirectional_transformer import BidirectionalTransformer
 
-from tsv1.encoder_decoders.vq_vae_encdec import VQVAEEncoder
-from tsv1.vector_quantization.vq import VectorQuantize
+from ..encoder_decoders.vq_vae_encdec import VQVAEEncoder
+from ..vector_quantization.vq import VectorQuantize
 
-from tsv1.experiments.exp_stage1 import ExpStage1
-from tsv1.utils import freeze, timefreq_to_time, time_to_timefreq, quantize, zero_pad_low_freq, zero_pad_high_freq
+from ..experiments.exp_stage1 import ExpStage1
+from ..utils import freeze, timefreq_to_time, time_to_timefreq, quantize, zero_pad_low_freq, zero_pad_high_freq
 
 
 class MaskGIT(nn.Module):

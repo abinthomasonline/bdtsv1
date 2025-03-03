@@ -1,5 +1,5 @@
 from torch.utils.data import DataLoader
-from tsv1.preprocessing.preprocess import CustomDataset, DatasetImporterCustom
+from ..preprocessing.preprocess import CustomDataset, DatasetImporterCustom
 
 
 def build_custom_data_pipeline(batch_size, dataset_importer:DatasetImporterCustom, config: dict, kind: str) -> DataLoader:
