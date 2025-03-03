@@ -17,7 +17,7 @@ from datapip import data_struct as ds
 from datapip.algo.basic import uniform_like
 
 
-class tsv1:
+class ts_v1_model:
     """Implements TS-V1 model class
       Usage:
       1. TS model class for relational model
