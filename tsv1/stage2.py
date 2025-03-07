@@ -77,6 +77,9 @@ def train_stage2(config: dict,
         accelerator = 'gpu'
         device = gpu_device_ind
 
+    if not os.path.isdir(saved_models_dir):
+        os.mkdir(saved_models_dir)  
+
     # Define your early stopping callback
     early_stop_callback = EarlyStopping(
         monitor='val/loss',  # Metric to monitor; must match the name logged in validation_step
@@ -90,8 +93,9 @@ def train_stage2(config: dict,
         monitor="val/loss",  # Metric to monitor
         mode="min",  # Save the model with minimum 'val_loss'
         save_top_k=1, # Save the best model
-        dirpath="./saved_models/",  # Directory to save checkpoints
-        filename="best-model-stage2"  # Custom filename format
+        dirpath=saved_models_dir,  # Directory to save checkpoints
+        filename=f'stage2-{dataset_name}',  # Custom filename format
+        verbose=True
     )
 
     if config['early_stopping'] == True:
@@ -114,9 +118,9 @@ def train_stage2(config: dict,
                 )
 
     print('saving the model...')
-    if not os.path.isdir(saved_models_dir):
-        os.mkdir(saved_models_dir)  
-    trainer.save_checkpoint(os.path.join(saved_models_dir, f'stage2-{dataset_name}.ckpt'))
+    # if not os.path.isdir(saved_models_dir):
+    #     os.mkdir(saved_models_dir)  
+    # trainer.save_checkpoint(os.path.join(saved_models_dir, f'stage2-{dataset_name}.ckpt'))
 
 
     wandb.finish()
