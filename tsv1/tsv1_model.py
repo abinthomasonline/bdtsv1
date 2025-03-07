@@ -86,8 +86,8 @@ class ts_v1_model:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=self.static_test_data, 
-                                                 temporal_data_test=self.temporal_test_data, 
+                                                 static_data_test=static_test_data, 
+                                                 temporal_data_test=temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
@@ -115,8 +115,8 @@ class ts_v1_model:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=self.static_test_data, 
-                                                 temporal_data_test=self.temporal_test_data, 
+                                                 static_data_test=static_test_data, 
+                                                 temporal_data_test=temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
