@@ -43,7 +43,7 @@ class ts_v1_model:
                  dataset_name: str=None, seq_len: int=None, num_features: int=None, static_cond_dim: int=None, chunk_size: int=32, out_dir: str=None, **kwargs):
         # Use __file__ to get the absolute path of the current module, then construct the config path relative to it
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.config_path = os.path.abspath(os.path.join(current_dir, "/configs/model/config.json"))
+        self.config_path = os.path.join(current_dir, "/configs/model/config.json")
         self.dataset_name = dataset_name
         self.seq_len = seq_len
         self.num_ts_features = num_features
