@@ -315,3 +315,7 @@ class ts_v1_model:
         model_stage2.eval()
         return model_stage2.maskgit
     
+
+    def print_config_path(self):
+        print(self.config_path)
+    
