@@ -62,7 +62,7 @@ class DatasetImporterCustom(object):
                     ts[j, :g_data.shape[-1]] = g_data
             else:
                 ts = np.zeros((actual_batch_size, 0), dtype='float32')
-            if ts.shape[1] // self.seq_len != 0:
+            if ts.shape[1] % self.seq_len != 0:
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
                 ts = np.reshape(ts, (ts.shape[0], ts.shape[1] // self.seq_len, self.seq_len)) # (b, c, l)
@@ -105,7 +105,7 @@ class DatasetImporterCustom(object):
                 ts = np.zeros((sc.shape[0], 0), dtype=sc.dtype)
 
             # Ensure chunk size is divisible by sequence length
-            if ts.shape[1] // self.seq_len != 0:
+            if ts.shape[1] % self.seq_len != 0:
                 raise ValueError("The number of time series in the dataset is not divisible by the sequence length.")
             else:
                 # Process time series data
