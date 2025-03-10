@@ -51,7 +51,7 @@ class DatasetImporterCustom(object):
         # First pass: calculate mean
         all_index = temporal_data.groups
         n_temporal_columns = len(temporal_data.columns)
-        for i in range(0, all_index.shape[0], self.batch_size):
+        for i in range(0, all_index.to_series().shape[0], self.batch_size):
             # Split into time series and static conditions
             batch_ids = all_index[i:i + self.batch_size]
             if n_temporal_columns > 0:
