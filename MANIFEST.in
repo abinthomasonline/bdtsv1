@@ -1,3 +1,5 @@
 include README.md
 include LICENSE
 recursive-include tsv1/configs *.json *.yaml
+recursive-include tsv1/configs/model *.json
+
