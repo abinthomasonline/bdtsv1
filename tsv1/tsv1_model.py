@@ -43,7 +43,7 @@ class ts_v1_model:
                  dataset_name: str=None, seq_len: int=None, num_features: int=None, static_cond_dim: int=None, chunk_size: int=32, out_dir: str=None, **kwargs):
         # Use __file__ to get the absolute path of the current module, then construct the config path relative to it
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.config_path = os.path.join(current_dir, "/configs/model/config.json")
+        self.config_path = os.path.abspath(os.path.join(current_dir, "configs/model/config.json"))
         self.dataset_name = dataset_name
         self.seq_len = seq_len
         self.num_ts_features = num_features
@@ -317,5 +317,20 @@ class ts_v1_model:
     
 
     def print_config_path(self):
-        print(self.config_path)
+        print(f"Config path: {self.config_path}")
+    
+    def validate_config(self):
+        """Validate that the config file exists and can be loaded."""
+        if not os.path.exists(self.config_path):
+            raise FileNotFoundError(f"Config file not found at: {self.config_path}")
+        
+        try:
+            with open(self.config_path, 'r') as f:
+                config = json.load(f)
+            print(f"Config file successfully loaded from: {self.config_path}")
+            return True
+        except json.JSONDecodeError:
+            raise ValueError(f"Config file at {self.config_path} is not valid JSON")
+        except Exception as e:
+            raise Exception(f"Error loading config file: {str(e)}")
     
