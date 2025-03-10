@@ -41,7 +41,7 @@ class ts_v1_model:
     """
     def __init__(self, static_train_data: ds.BaseDataFrame=None, temporal_train_data: ds.BaseDataFrameGroupBy=None, 
                  dataset_name: str=None, seq_len: int=None, num_features: int=None, static_cond_dim: int=None, chunk_size: int=32, out_dir: str=None, **kwargs):
-        self.config_path = "../config/config.json"
+        self.config_path = "../config/model/config.json"
         self.dataset_name = dataset_name
         self.seq_len = seq_len
         self.num_ts_features = num_features
