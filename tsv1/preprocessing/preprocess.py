@@ -34,8 +34,8 @@ class DatasetImporterCustom(object):
             
             # Second pass: process and scale data
         self.process_data('train', static_data_train, temporal_data_train, data_scaling)
-        config['dataset']['num_features'] = self.TS_train.shape[1]
-        print(f"TS_train shape: {self.TS_train.shape}")
+        config['dataset']['num_features'] = self.TS_train.obj.shape[1]
+        print(f"TS_train shape: {self.TS_train.obj.shape}")
         print(f"SC_train shape: {self.SC_train.shape}")
 
         # Process test data in batches
@@ -118,17 +118,23 @@ class DatasetImporterCustom(object):
                 
                 # Handle NaN values for the current batch
                 np.nan_to_num(ts, copy=False)
-                
-                ts_list.append(static_data.from_pandas(pd.DataFrame(ts), index=batch_ids))
+
+                gids = batch_ids.repeat(self.seq_len)
+                ts_df = pd.DataFrame(
+                    ts.swapaxes(1, 2).reshape((ts.shape[0] * self.seq_len), -1),
+                    columns=[f"col{j}" for j in range(ts.shape[1])]
+                )
+                ts_df["$gid"] = gids.values
+                ts_list.append(static_data.from_pandas(ts_df))
                 sc_list.append(static_data.from_pandas(pd.DataFrame(sc), index=batch_ids))
         
         # Concatenate all processed chunks
         if ts_list:
             if kind == 'train':
-                self.TS_train = static_data.concat(ts_list, axis=0)
+                self.TS_train = static_data.concat(ts_list, axis=0).groupby('$gid')
                 self.SC_train = static_data.concat(sc_list, axis=0)
             else:
-                self.TS_test = static_data.concat(ts_list, axis=0)
+                self.TS_test = static_data.concat(ts_list, axis=0).groupby('$gid')
                 self.SC_test = static_data.concat(sc_list, axis=0)
 
 class CustomDataset(Dataset):
@@ -149,11 +155,11 @@ class CustomDataset(Dataset):
         else:
             raise ValueError
 
-        self._len = self.TS.shape[0]
-        self._index = self.TS.index
+        self._len = self.SC.shape[0]
+        self._index = self.SC.index
 
     def __getitem__(self, idx):
-        ts, sc = self.TS.get_by_index(self._index[idx]), self.SC.get_by_index(self._index[idx])
+        ts, sc = self.TS.get_group(self._index[idx]), self.SC.get_by_index(self._index[idx])
         return ts, sc
 
     def __len__(self):
