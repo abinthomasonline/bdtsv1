@@ -104,7 +104,7 @@ def train_stage2(config: dict,
         callbacks = [LearningRateMonitor(logging_interval='step'), checkpoint_callback]
         
     trainer = pl.Trainer(logger=wandb_logger,
-                         enable_checkpointing=False,
+                         enable_checkpointing=True,
                          callbacks=callbacks,
                          max_steps=config['trainer_params']['max_steps']['stage2'],
                          devices=device,
