@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import torch
 
+from tsv1.preprocessing.preprocess import DatasetImporterCustom
 from tsv1.stage1 import *
 from tsv1.stage2 import *
 from tsv1.generate import *
@@ -143,8 +144,8 @@ class ts_v1_model:
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
-                                                 static_data_test=self.static_test_data, 
-                                                 temporal_data_test=self.temporal_test_data, 
+                                                 static_data_test=self.static_train_data, 
+                                                 temporal_data_test=self.temporal_train_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
         
         print("dataset_importer loaded")
