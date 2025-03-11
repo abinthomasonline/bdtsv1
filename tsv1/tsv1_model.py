@@ -128,7 +128,7 @@ class ts_v1_model:
                  feature_extractor_type='rocket', use_custom_dataset=True)
         
 
-    def train_stage1(self):
+    def train_vqvae(self):
         """
         Train the TSV1 stage 1 model
         """
@@ -146,6 +146,8 @@ class ts_v1_model:
                                                  static_data_test=self.static_test_data, 
                                                  temporal_data_test=self.temporal_test_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
+        
+        print("dataset_importer loaded")
         
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
                                                for kind in ['train', 'test']]
