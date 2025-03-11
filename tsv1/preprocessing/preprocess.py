@@ -95,7 +95,7 @@ class DatasetImporterCustom(object):
         for i in range(0, static_data.shape[0], self.batch_size):
             # Split into time series and static conditions
             batch_ids = static_ids[i:i + self.batch_size]
-            sc = static_data[batch_ids].values
+            sc = static_data.get_by_index(batch_ids).values
             if n_temporal_columns > 0:
                 ts = np.zeros((sc.shape[0], self.seq_len * n_temporal_columns), dtype=sc.dtype)
                 for j, sc_id in enumerate(batch_ids):
