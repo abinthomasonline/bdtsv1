@@ -55,8 +55,8 @@ class ts_v1_model:
         self.out_dir = out_dir
 
         #### To do - Jiayu, add code to split static_train_data and temporal_train_data into static_test_data and temporal_test_data for validation in early stopping
-        self.static_test_data = None
-        self.temporal_test_data = None
+        self.static_test_data = self.static_train_data
+        self.temporal_test_data = self.temporal_train_data
 
         ####
         

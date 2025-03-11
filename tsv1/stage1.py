@@ -50,7 +50,10 @@ def train_stage1(config: dict,
     project_name = 'TimeVQVAE-stage1'
 
     # fit
-    _, in_channels, input_length = train_data_loader.dataset.TS.shape
+    # _, in_channels, input_length = train_data_loader.dataset.TS.shape
+    in_channels = len(train_data_loader.dataset.TS.columns)
+    size = train_data_loader.dataset.TS.size()
+    input_length = size[size.index[0]]
     train_exp = ExpStage1(in_channels, input_length, config)
     
     n_trainable_params = sum(p.numel() for p in train_exp.parameters() if p.requires_grad)
