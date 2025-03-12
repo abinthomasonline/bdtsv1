@@ -153,6 +153,7 @@ class ts_v1_model:
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
                                                for kind in ['train', 'test']]
         
+        
         train_stage1(config, self.out_dir, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
 
         
