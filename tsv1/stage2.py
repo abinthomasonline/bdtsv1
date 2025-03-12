@@ -87,7 +87,7 @@ def train_stage2(config: dict,
         monitor='val/loss',  # Metric to monitor; must match the name logged in validation_step
         min_delta=0.00,  # Minimum change in the monitored quantity to qualify as an improvement
         patience=10,  # Number of validation epochs with no improvement after which training will be stopped
-        verbose=True,
+        verbose=False,
         mode='min'  # Because we want to minimize the loss
     )
 
@@ -97,7 +97,7 @@ def train_stage2(config: dict,
         save_top_k=1, # Save the best model
         dirpath=saved_models_dir,  # Directory to save checkpoints
         filename=f'stage2',  # Custom filename format
-        verbose=True
+        verbose=False
     )
 
     if config['early_stopping'] == True:
