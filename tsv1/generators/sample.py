@@ -161,6 +161,11 @@ def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int
             z_high_freq.append(extractor(x[b*i:b*(i+1)], encoder_h))
     z_low_freq = torch.cat(z_low_freq)
     z_high_freq = torch.cat(z_high_freq)
+    
+    # Move tensors back to CPU before returning
+    z_low_freq = z_low_freq.cpu()
+    z_high_freq = z_high_freq.cpu()
+    
     return z_low_freq, z_high_freq
 
 
