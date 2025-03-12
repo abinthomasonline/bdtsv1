@@ -16,7 +16,7 @@ from ..preprocessing.data_pipeline import build_custom_data_pipeline
 from ..utils import get_root_dir, load_yaml_param_settings
 from ..experiments.exp_stage1 import ExpStage1
 from ..utils import freeze
-
+from ..encoder_decoders.vq_vae_encdec import VQVAEEncoder
 
 @torch.no_grad()
 def static_condition_sample(maskgit: MaskGIT, n_samples: int, device, static_condition, batch_size=32, return_representations=False):
@@ -117,16 +117,29 @@ def save_generated_samples(x_new: np.ndarray, save: bool, fname: str = None):
 
 
 
+
+
+
 @torch.no_grad()
 def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int, device, x, batch_size=32):
     """
     extract embeddings from the encoder
     """
+
+    @torch.no_grad()
+    def encode_to_z(x, encoder: VQVAEEncoder):
+        """
+        encode x to z
+        """
+        # print("x shape for encoding is:", x.shape)
+        z = encoder(x)
+        return z
+    
     assert n_samples == x.shape[0]
 
     encoder_l = model.encoder_l
     encoder_h = model.encoder_h
-    extractor = model.encode_to_z
+    extractor = encode_to_z
     z_low_freq, z_high_freq = [], []
 
     n_iters = n_samples // batch_size
@@ -146,3 +159,5 @@ def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int
     z_low_freq = torch.cat(z_low_freq)
     z_high_freq = torch.cat(z_high_freq)
     return z_low_freq, z_high_freq
+
+
