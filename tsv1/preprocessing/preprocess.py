@@ -133,16 +133,23 @@ class DatasetImporterCustom(object):
         
         # Concatenate all processed chunks
         if ts_list:
+            print("dataloader kind: ", kind)
             if kind == 'train':
                 self.TS_train = static_data.concat(ts_list, axis=0).groupby('$gid')
                 columns = [c for c in self.TS_train.columns if c != "$gid"]
                 self.TS_train = self.TS_train[columns]
                 self.SC_train = static_data.concat(sc_list, axis=0)
+                print("TS_train shape: ", self.TS_train.shape)
+                print("SC_train shape: ", self.SC_train.shape)
             else:
                 self.TS_test = static_data.concat(ts_list, axis=0).groupby('$gid')
                 columns = [c for c in self.TS_test.columns if c != "$gid"]
                 self.TS_test = self.TS_test[columns]
                 self.SC_test = static_data.concat(sc_list, axis=0)
+                print("TS_test shape: ", self.TS_test.shape)
+                print("SC_test shape: ", self.SC_test.shape)
+        else:
+            print("No data to process")
 
 class CustomDataset(Dataset):
     def __init__(self, kind: str, dataset_importer: DatasetImporterCustom, **kwargs):
