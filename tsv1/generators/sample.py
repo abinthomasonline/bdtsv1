@@ -14,6 +14,8 @@ import matplotlib.pyplot as plt
 from ..generators.maskgit import MaskGIT
 from ..preprocessing.data_pipeline import build_custom_data_pipeline
 from ..utils import get_root_dir, load_yaml_param_settings
+from ..experiments.exp_stage1 import ExpStage1
+from ..utils import freeze
 
 
 @torch.no_grad()
@@ -116,15 +118,15 @@ def save_generated_samples(x_new: np.ndarray, save: bool, fname: str = None):
 
 
 @torch.no_grad()
-def extract_embedding_for_relational_components(maskgit: MaskGIT, n_samples: int, device, x, batch_size=32):
+def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int, device, x, batch_size=32):
     """
     extract embeddings from the encoder
     """
     assert n_samples == x.shape[0]
 
-    encoder_l = maskgit.encoder_l
-    encoder_h = maskgit.encoder_h
-    extractor = maskgit.encode_to_z
+    encoder_l = model.encoder_l
+    encoder_h = model.encoder_h
+    extractor = model.encode_to_z
     z_low_freq, z_high_freq = [], []
 
     n_iters = n_samples // batch_size
