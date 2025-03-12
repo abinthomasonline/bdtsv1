@@ -80,7 +80,8 @@ def generate_data(config: dict,
     evaluation = Evaluation(saved_models_dir, dataset_name, static_cond_dim, in_channels, input_length, device, config,
                             use_fidelity_enhancer=use_fidelity_enhancer,
                             feature_extractor_type=feature_extractor_type,
-                            use_custom_dataset=use_custom_dataset).to(device)
+                            use_custom_dataset=use_custom_dataset,
+                            kind = "generation").to(device)
     (_, _, xhat), xhat_R = evaluation.sample(static_conditions.shape[0], static_conditions) # (b, c, l)
     x_new = np.transpose(xhat, (0, 2, 1)) # (b, l, c)
 
