@@ -177,7 +177,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         ts_data = self.TS.get_group(self._index[idx]).values
         ts_data = ts_data.transpose()
-        print(f"ts_data shape at getitem: {ts_data.shape}")
+        # print(f"ts_data shape at getitem: {ts_data.shape}")
         sc_data = self.SC.get_by_index(self._index[idx]).values
         try:
             # Get the time series data and static condition for the specified index
