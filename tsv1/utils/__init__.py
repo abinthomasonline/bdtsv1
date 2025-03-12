@@ -224,7 +224,9 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
     x: (B, C, L)
     """
     x = rearrange(x, 'b c l -> (b c) l')
-    print(f"x type: {x.type()}")
+    # print(f"x type: {x.type()}")
+    # Convert to float type before STFT     
+    x = x.float()
     x = torch.stft(x, n_fft, normalized=norm, return_complex=True, window=torch.hann_window(window_length=n_fft, device=x.device))
     x = torch.view_as_real(x)  # (B, N, T, 2); 2: (real, imag)
     x = rearrange(x, '(b c) n t z -> b (c z) n t ', c=C)  # z=2 (real, imag)
