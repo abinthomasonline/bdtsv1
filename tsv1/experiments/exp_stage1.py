@@ -54,8 +54,8 @@ class ExpStage1(pl.LightningModule):
         """
         x, y = batch
 
-        print("data type of x, data type of y", type(x), type(y))
-        print("shape of x, shape of y", x.shape, y.shape)
+        # print("data type of x, data type of y", type(x), type(y))
+        # print("shape of x, shape of y", x.shape, y.shape)
 
         recons_loss = {'LF.time': 0., 'HF.time': 0.}
         vq_losses = {'LF': None, 'HF': None}

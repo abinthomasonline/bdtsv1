@@ -121,7 +121,8 @@ def generate_embeddings(config: dict,
     evaluation = Evaluation(saved_models_dir, dataset_name, static_cond_dim, in_channels, input_length, device, config,
                             use_fidelity_enhancer=use_fidelity_enhancer,
                             feature_extractor_type=feature_extractor_type,
-                            use_custom_dataset=use_custom_dataset).to(device)
+                            use_custom_dataset=use_custom_dataset,
+                            kind = "embedding").to(device)
     
     z_low_freq, z_high_freq = evaluation.extract_embeddings(ts_data.shape[0], ts_data)
 

@@ -26,7 +26,8 @@ from ..generators.fidelity_enhancer import FidelityEnhancer
 from ..evaluation.rocket_functions import generate_kernels, apply_kernels
 from ..utils import zero_pad_low_freq, zero_pad_high_freq, remove_outliers
 from ..evaluation.stat_metrics import marginal_distribution_difference, auto_correlation_difference, skewness_difference, kurtosis_difference
-
+from ..experiments.exp_stage1 import ExpStage1
+from ..utils import freeze
 
 
 class Evaluation(nn.Module):
@@ -48,7 +49,8 @@ class Evaluation(nn.Module):
                  use_fidelity_enhancer:bool=False,
                  feature_extractor_type:str='rocket',
                  rocket_num_kernels:int=1000,
-                 use_custom_dataset:bool=True
+                 use_custom_dataset:bool=True,
+                 kind:str=None
                  ):
         super().__init__()
         self.saved_models_dir = saved_models_dir
@@ -68,7 +70,8 @@ class Evaluation(nn.Module):
         self.ts_len = self.config['seq_len']  # time series length (seq_len)
 
         # load the stage2 model
-        self.stage2 = ExpStage2.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage2-{dataset_name}.ckpt'), 
+        if kind == "generation":
+            self.stage2 = ExpStage2.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage2-{dataset_name}.ckpt'), 
                                                       dataset_name=dataset_name,
                                                       static_cond_dim=static_cond_dim,
                                                       in_channels=in_channels,
@@ -79,9 +82,15 @@ class Evaluation(nn.Module):
                                                       use_custom_dataset=use_custom_dataset,
                                                       map_location='cpu',
                                                       strict=False)
-        self.stage2.eval()
-        self.maskgit = self.stage2.maskgit
-        self.stage1 = self.stage2.maskgit.stage1
+            self.stage2.eval()
+            self.maskgit = self.stage2.maskgit
+            self.stage1 = self.stage2.maskgit.stage1
+        elif kind == "embedding":
+            self.stage1 = ExpStage1.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage1-{dataset_name}.ckpt'), 
+                                               in_channels=self.num_ts_features, input_length=self.seq_len, 
+                                               config=self.load_config(), map_location='cpu')
+            freeze(self.stage1)
+            self.stage1.eval()
 
         # load the fidelity enhancer
         if use_fidelity_enhancer:
@@ -129,5 +138,5 @@ class Evaluation(nn.Module):
         """
         extract embeddings from the encoder
         """
-        z_low_freq, z_high_freq = extract_embedding_for_relational_components(self.maskgit, n_samples, self.device, x, self.batch_size)
+        z_low_freq, z_high_freq = extract_embedding_for_relational_components(self.stage1, n_samples, self.device, x, self.batch_size)
         return z_low_freq, z_high_freq
