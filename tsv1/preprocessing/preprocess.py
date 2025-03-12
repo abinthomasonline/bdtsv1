@@ -40,10 +40,14 @@ class DatasetImporterCustom(object):
             config['dataset']['num_features'] = self.TS_train.obj.shape[1]
             print(f"TS_train shape: {self.TS_train.obj.shape}")
             print(f"SC_train shape: {self.SC_train.shape}")
+        else:
+            print("No training data to process")
 
         # Process test data in batches
         if static_data_test is not None:
             self.process_data('test', static_data_test, temporal_data_test, data_scaling)
+        else:
+            print("No test data to process")
 
     def calculate_statistics(self, temporal_data: ds.BaseDataFrameGroupBy):
         """Calculate mean and std in batches"""
