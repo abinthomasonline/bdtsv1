@@ -161,8 +161,8 @@ class CustomDataset(Dataset):
         self._index = self.SC.index
 
     def __getitem__(self, idx):
-        ts_data = self.TS.get_group(self._index[idx])
-        sc_data = self.SC.get_by_index(self._index[idx])
+        ts_data = self.TS.get_group(self._index[idx]).values
+        sc_data = self.SC.get_by_index(self._index[idx]).values
         try:
             # Get the time series data and static condition for the specified index
 
