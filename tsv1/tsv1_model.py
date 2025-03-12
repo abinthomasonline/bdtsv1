@@ -253,7 +253,7 @@ class ts_v1_model:
             ts_data = [
                 torch.from_numpy(test_data_loader.dataset.TS.get_group(i).values) for i in group_index
             ]
-            ts_data = torch.stack(ts_data)
+            ts_data = torch.stack(ts_data).transpose(1, 2)
 
             # generate embeddings
             low_freq_embeddings, high_freq_embeddings = generate_embeddings(
