@@ -21,6 +21,10 @@ class ExpStage1(pl.LightningModule):
         :param n_train_samples: number of training samples
         """
         super().__init__()
+        
+        # Print input dimensions for debugging
+        print(f"ExpStage1 initialization - in_channels: {in_channels}, input_length: {input_length}")
+        
         self.input_length = input_length
         self.config = config
 

@@ -131,11 +131,29 @@ class VQVAEEncoder(nn.Module):
         """
         :param x: (b c l)
         """
+        # Print shapes for debugging
+        print(f"VQVAEEncoder input shape: {x.shape}")
+        
         in_channels = x.shape[1]
         x = time_to_timefreq(x, self.n_fft, in_channels)  # (b c h w)
+        print(f"After time_to_timefreq: {x.shape}")
+        
+        # Apply padding function
         x = self.pad_func(x, copy=True)   # (b c h w)
+        print(f"After pad_func: {x.shape}")
 
-        out = self.encoder(x)  # (b c h w)
+        # Pass through encoder
+        try:
+            out = self.encoder(x)  # (b c h w)
+            print(f"After encoder: {out.shape}")
+        except RuntimeError as e:
+            # Display helpful error message
+            print(f"Error in encoder: {e}")
+            print(f"Input shape: {x.shape}")
+            print(f"Expected input channels: {next(self.encoder.parameters()).shape[1]}")
+            print(f"Actual input channels: {x.shape[1]}")
+            raise
+        
         if not self.is_num_tokens_updated:
             self.H_prime = torch.tensor(out.shape[2])
             self.W_prime = torch.tensor(out.shape[3])

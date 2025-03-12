@@ -108,6 +108,7 @@ class MaskGIT(nn.Module):
         """
         encode x to z
         """
+        print("x shape for encoding is:", x.shape)
         z = encoder(x)
         return z
 

@@ -76,7 +76,7 @@ class ts_v1_model:
             model_config = json.load(f)
             f.close()
 
-        new_model_config_save_path = self.config_path
+    
         config = self.load_config()
 
         # Stage1 training
@@ -133,14 +133,18 @@ class ts_v1_model:
         """
         Train the TSV1 stage 1 model
         """
+        new_model_config_save_path = self.config_path
+
+        with open(self.config_path, "r") as f:
+            model_config = json.load(f)
+            f.close()
         config = self.load_config()
+        
         # Stage1 training
         dataset_name = self.dataset_name
         batch_size = config['dataset']['batch_sizes']['stage1']
         seq_len = self.seq_len
         gpu_device_ind = config['gpu_device_id']
-
-        
 
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=self.static_train_data, 
                                                  temporal_data_train=self.temporal_train_data, 
@@ -150,11 +154,24 @@ class ts_v1_model:
         
         print("dataset_importer loaded")
         
+        # Make sure model config matches the data dimensions
+        num_features = config['dataset']['num_features']
+        print(f"Number of features in dataset: {num_features}")
+        
         train_data_loader, test_data_loader = [build_custom_data_pipeline(batch_size, dataset_importer, config, kind)
                                                for kind in ['train', 'test']]
         
+        # Get sample batch to check dimensions
+        for batch in train_data_loader:
+            x, y = batch
+            print(f"Input batch shape: {x.shape}, expected channels: {num_features}")
+            break
         
         train_stage1(config, self.out_dir, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
+        model_config['data']['dataset'] = config['dataset']
+        os.remove(new_model_config_save_path)
+        with open(new_model_config_save_path, "w") as f:
+            json.dump(model_config, f, indent=4)
 
         
 
