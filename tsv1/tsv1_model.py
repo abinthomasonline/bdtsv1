@@ -70,14 +70,12 @@ class ts_v1_model:
         static_test_data = self.static_train_data[is_test]
         temporal_test_data = self.temporal_train_data.filter(lambda g, d: is_test[g])
 
-        new_model_config_save_path = self.config_path
-
         with open(self.config_path, "r") as f:
             model_config = json.load(f)
             f.close()
 
     
-        config = self.load_config()
+        config = self.load_config(config_path=None)
 
         # Stage1 training
         dataset_name = self.dataset_name
@@ -98,13 +96,13 @@ class ts_v1_model:
         
         train_stage1(config, self.out_dir, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
         model_config['data']['dataset'] = config['dataset']
-        os.remove(new_model_config_save_path)
-        with open(new_model_config_save_path, "w") as f:
+        new_config_path = self.out_dir + "/ts_model.json"
+        with open(new_config_path, "w") as f:
             json.dump(model_config, f, indent=4)
 
         
         # load training configs for Stage2
-        config = self.load_config()
+        config = self.load_config(config_path=self.out_dir + "/ts_model.json")
 
         # Stage 2 training
         dataset_name = self.dataset_name
@@ -133,12 +131,11 @@ class ts_v1_model:
         """
         Train the TSV1 stage 1 model
         """
-        new_model_config_save_path = self.config_path
 
         with open(self.config_path, "r") as f:
             model_config = json.load(f)
             f.close()
-        config = self.load_config()
+        config = self.load_config(config_path=None)
         
         # Stage1 training
         dataset_name = self.dataset_name
@@ -169,14 +166,14 @@ class ts_v1_model:
         
         train_stage1(config, self.out_dir, dataset_name, train_data_loader, test_data_loader, gpu_device_ind)
         model_config['data']['dataset'] = config['dataset']
-        os.remove(new_model_config_save_path)
-        with open(new_model_config_save_path, "w") as f:
+        new_config_path = self.out_dir + "/ts_model.json"
+        with open(new_config_path, "w") as f:
             json.dump(model_config, f, indent=4)
 
         
 
     def generate_ts_data(self, static_condition_data: ds.BaseDataFrame):
-        config = self.load_config()
+        config = self.load_config(config_path=self.out_dir + "/ts_model.json")
         dataset_name = self.dataset_name
         batch_size = config['evaluation']['batch_size']
         static_cond_dim = self.static_cond_dim
@@ -233,7 +230,7 @@ class ts_v1_model:
 
 
     def generate_embeddings(self, ts_data: ds.BaseDataFrameGroupBy):
-        config = self.load_config()
+        config = self.load_config(config_path=self.out_dir + "/ts_model.json")
         dataset_name = config['dataset']['dataset_name']
         batch_size = config['evaluation']['batch_size']
         static_cond_dim = self.static_cond_dim
@@ -292,10 +289,15 @@ class ts_v1_model:
     #     else:
     #         print(f'Stage 2 model not found at {model_save_path}')
     
-    def load_config(self):
-        with open(self.config_path, "r") as f:
-            model_config = json.load(f)
-            f.close()
+    def load_config(self, config_path: str=None):
+        if config_path is None:
+            with open(self.config_path, "r") as f:
+                model_config = json.load(f)
+                f.close()
+        else:
+            with open(config_path, "r") as f:
+                model_config = json.load(f)
+                f.close()
 
         if 'seq_len' in model_config:
             config = model_config
@@ -342,6 +344,7 @@ class ts_v1_model:
 
     def print_config_path(self):
         print(f"Config path: {self.config_path}")
+        return self.config_path
     
     def validate_config(self):
         """Validate that the config file exists and can be loaded."""
@@ -357,4 +360,13 @@ class ts_v1_model:
             raise ValueError(f"Config file at {self.config_path} is not valid JSON")
         except Exception as e:
             raise Exception(f"Error loading config file: {str(e)}")
+        
+    def add_new_config(self):
+        with open(self.config_path, "r") as f:
+            model_config = json.load(f)
+            f.close()
+        model_config['dataset']['num_features'] = 1024
+        with open(self.config_path, "w") as f:
+            json.dump(model_config, f, indent=4)
+            f.close()
     

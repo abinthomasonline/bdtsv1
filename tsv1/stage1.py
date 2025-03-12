@@ -90,7 +90,7 @@ def train_stage1(config: dict,
         mode="min",  # Save the model with minimum 'val_loss'
         save_top_k=1, # Save the best model
         dirpath=saved_models_dir,  # Directory to save checkpoints
-        filename=f'stage1-{dataset_name}',  # Custom filename format
+        filename=f'stage1',  # Custom filename format
         verbose=True
     )
 

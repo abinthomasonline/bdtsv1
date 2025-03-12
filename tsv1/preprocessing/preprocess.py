@@ -38,14 +38,14 @@ class DatasetImporterCustom(object):
         if static_data_train is not None:
             self.process_data('train', static_data_train, temporal_data_train, data_scaling)
             config['dataset']['num_features'] = self.TS_train.obj.shape[1]
-            print(f"TS_train shape: {self.TS_train.obj.shape}")
-            print(f"SC_train shape: {self.SC_train.shape}")
+            print("training dataset processed")
         else:
             print("No training data to process")
 
         # Process test data in batches
         if static_data_test is not None:
             self.process_data('test', static_data_test, temporal_data_test, data_scaling)
+            print("testing dataset processed")
         else:
             print("No test data to process")
 
