@@ -244,7 +244,7 @@ class ts_v1_model:
         index = ts_data.groups
         dataset_importer = DatasetImporterCustom(config=config, static_data_train=None,
                                                  temporal_data_train=None, 
-                                                 static_data_test=ds.BaseSeries.registry[ts_data.data_struct].from_uniform(0, index=index)[[]],
+                                                 static_data_test=ts_data.size().to_frame(),
                                                  temporal_data_test=ts_data, 
                                                  seq_len=seq_len, data_scaling=True, batch_size=self.chunk_size)
 
