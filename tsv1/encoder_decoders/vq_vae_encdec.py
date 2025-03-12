@@ -132,20 +132,20 @@ class VQVAEEncoder(nn.Module):
         :param x: (b c l)
         """
         # Print shapes for debugging
-        print(f"VQVAEEncoder input shape: {x.shape}")
+        # print(f"VQVAEEncoder input shape: {x.shape}")
         
         in_channels = x.shape[1]
         x = time_to_timefreq(x, self.n_fft, in_channels)  # (b c h w)
-        print(f"After time_to_timefreq: {x.shape}")
+        # print(f"After time_to_timefreq: {x.shape}")
         
         # Apply padding function
         x = self.pad_func(x, copy=True)   # (b c h w)
-        print(f"After pad_func: {x.shape}")
+        # print(f"After pad_func: {x.shape}")
 
         # Pass through encoder
         try:
             out = self.encoder(x)  # (b c h w)
-            print(f"After encoder: {out.shape}")
+            # print(f"After encoder: {out.shape}")
         except RuntimeError as e:
             # Display helpful error message
             print(f"Error in encoder: {e}")
