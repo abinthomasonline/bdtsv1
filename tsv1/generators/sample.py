@@ -133,7 +133,8 @@ def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int
         """
         # print("x shape for encoding is:", x.shape)
         # Ensure x is on the same device as the encoder
-        x = x.to(encoder.weight_device)
+        encoder_device = next(encoder.parameters()).device
+        x = x.to(encoder_device)
         z = encoder(x)
         return z
     
