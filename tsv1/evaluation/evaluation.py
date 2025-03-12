@@ -71,7 +71,7 @@ class Evaluation(nn.Module):
 
         # load the stage2 model
         if kind == "generation":
-            self.stage2 = ExpStage2.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage2-{dataset_name}.ckpt'), 
+            self.stage2 = ExpStage2.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage2.ckpt'), 
                                                       dataset_name=dataset_name,
                                                       static_cond_dim=static_cond_dim,
                                                       in_channels=in_channels,
@@ -86,16 +86,17 @@ class Evaluation(nn.Module):
             self.maskgit = self.stage2.maskgit
             self.stage1 = self.stage2.maskgit.stage1
         elif kind == "embedding":
-            self.stage1 = ExpStage1.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage1-{dataset_name}.ckpt'), 
-                                               in_channels=self.num_ts_features, input_length=self.seq_len, 
-                                               config=self.load_config(), map_location='cpu')
+            num_ts_features = self.config['dataset']['num_features']
+            self.stage1 = ExpStage1.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage1.ckpt'), 
+                                               in_channels=num_ts_features, input_length=self.ts_len, 
+                                               config=self.config, map_location='cpu')
             freeze(self.stage1)
             self.stage1.eval()
 
         # load the fidelity enhancer
         if use_fidelity_enhancer:
             self.fidelity_enhancer = FidelityEnhancer(self.ts_len, 1, config)
-            fname = f'fidelity_enhancer-{dataset_name}.ckpt'
+            fname = f'fidelity_enhancer .ckpt'
             ckpt_fname = os.path.join('saved_models', fname)
             self.fidelity_enhancer.load_state_dict(torch.load(ckpt_fname))
         else:

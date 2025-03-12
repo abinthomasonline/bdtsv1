@@ -50,7 +50,7 @@ class MaskGIT(nn.Module):
         self.gamma = self.gamma_func("cosine")
 
         # load the stage1 model
-        self.stage1 = ExpStage1.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage1-{dataset_name}.ckpt'), 
+        self.stage1 = ExpStage1.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage1.ckpt'), 
                                                      in_channels=in_channels,
                                                      input_length=input_length, 
                                                      config=config,
