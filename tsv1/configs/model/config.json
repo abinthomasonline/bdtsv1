@@ -83,13 +83,13 @@
     },
     "trainer_params": {
       "max_steps": {
-        "stage1": 50000,
-        "stage2": 200000,
+        "stage1": 200,
+        "stage2": 200,
         "stage_fid_enhancer": 50000
       },
       "val_check_interval": {
-        "stage1": 1000,
-        "stage2": 1000,
+        "stage1": 10,
+        "stage2": 10,
         "stage_fid_enhancer": 1000
       }
     }

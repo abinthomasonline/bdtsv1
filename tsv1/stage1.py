@@ -22,6 +22,8 @@ from .preprocessing.data_pipeline import build_custom_data_pipeline
 from .utils import get_root_dir, load_yaml_param_settings, str2bool
 
 os.environ['WANDB_MODE'] = 'disabled'
+os.environ["WANDB_DISABLE_PROGRESS_BAR"] = "True"
+
 def load_args():
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, help="Path to the config data  file.",

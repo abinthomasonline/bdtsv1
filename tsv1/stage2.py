@@ -27,6 +27,8 @@ from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
 os.environ['WANDB_MODE'] = 'disabled'
+os.environ["WANDB_DISABLE_PROGRESS_BAR"] = "True"
+
 
 def load_args():
     parser = ArgumentParser()
