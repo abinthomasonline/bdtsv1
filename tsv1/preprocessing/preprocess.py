@@ -161,26 +161,26 @@ class CustomDataset(Dataset):
         self._index = self.SC.index
 
     def __getitem__(self, idx):
+        ts_data = self.TS.get_group(self._index[idx])
+        sc_data = self.SC.get_by_index(self._index[idx])
         try:
             # Get the time series data and static condition for the specified index
-            ts_data = self.TS.get_group(self._index[idx])
-            sc_data = self.SC.get_by_index(self._index[idx])
-            
+
             # Convert to numpy arrays, ensuring they have the right type
             ts = ts_data.values.astype('float32') if hasattr(ts_data, 'values') else ts_data
             sc = sc_data.values.astype('float32') if hasattr(sc_data, 'values') else sc_data
-            
+
             # Check for NaN values and replace with zeros
             ts = np.nan_to_num(ts, nan=0.0)
             sc = np.nan_to_num(sc, nan=0.0)
-            
+
             return ts, sc
         except Exception as e:
             print(f"Error in __getitem__ for idx {idx}: {str(e)}")
             # Return empty arrays with appropriate shapes as fallback
             # This prevents the batch from failing completely
-            ts_shape = next(iter(self.TS.groups)).shape if self._len > 0 else (0,)
-            sc_shape = next(iter(self.SC.values)).shape if self._len > 0 else (0,)
+            ts_shape = ts_data.shape
+            sc_shape = sc_data.shape
             return np.zeros(ts_shape, dtype='float32'), np.zeros(sc_shape, dtype='float32')
 
     def __len__(self):
