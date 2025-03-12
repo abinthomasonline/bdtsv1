@@ -264,8 +264,8 @@ class ts_v1_model:
             # clean memory
             torch.cuda.empty_cache()
             ####
-            low_freq_embeddings = ds.BaseDataFrame.registry[index.data_struct].from_pandas(pd.DataFrame(low_freq_embeddings), index=group_index)
-            high_freq_embeddings =  ds.BaseDataFrame.registry[index.data_struct].from_pandas(pd.DataFrame(high_freq_embeddings), index=group_index)
+            low_freq_embeddings = ds.BaseDataFrame.registry[index.data_struct].from_pandas(pd.DataFrame(low_freq_embeddings.view(low_freq_embeddings.shape[0], -1)), index=group_index)
+            high_freq_embeddings =  ds.BaseDataFrame.registry[index.data_struct].from_pandas(pd.DataFrame(high_freq_embeddings.view(high_freq_embeddings.shape[0], -1)), index=group_index)
             low_outputs.append(low_freq_embeddings)
             high_outputs.append(high_freq_embeddings)
 
