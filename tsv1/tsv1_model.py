@@ -253,7 +253,10 @@ class ts_v1_model:
         high_outputs = []
         for st in range(0, len(index), self.chunk_size):
             group_index = index[st:st + self.chunk_size]
-            ts_data = torch.from_numpy(test_data_loader.dataset.TS.get_by_index(group_index).values)
+            ts_data = [
+                torch.from_numpy(test_data_loader.dataset.TS.get_group(i).values) for i in group_index
+            ]
+            ts_data = torch.stack(ts_data)
 
             # generate embeddings
             low_freq_embeddings, high_freq_embeddings = generate_embeddings(
