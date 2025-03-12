@@ -121,12 +121,12 @@ class DatasetImporterCustom(object):
                 # Handle NaN values for the current batch
                 np.nan_to_num(ts, copy=False)
 
-                gids = batch_ids.repeat(self.seq_len)
+                gids = batch_ids.repeat(self.seq_len).values
                 ts_df = pd.DataFrame(
                     ts.swapaxes(1, 2).reshape((ts.shape[0] * self.seq_len), -1),
                     columns=[f"col{j}" for j in range(ts.shape[1])]
                 )
-                ts_df["$gid"] = gids.values
+                ts_df["$gid"] = gids if len(gids.shape) == 1 else gids[:, 0]
                 ts_list.append(static_data.from_pandas(ts_df))
                 sc_list.append(static_data.from_pandas(pd.DataFrame(sc), index=batch_ids))
         
@@ -134,9 +134,13 @@ class DatasetImporterCustom(object):
         if ts_list:
             if kind == 'train':
                 self.TS_train = static_data.concat(ts_list, axis=0).groupby('$gid')
+                columns = [c for c in self.TS_train.columns if c != "$gid"]
+                self.TS_train = self.TS_train[columns]
                 self.SC_train = static_data.concat(sc_list, axis=0)
             else:
                 self.TS_test = static_data.concat(ts_list, axis=0).groupby('$gid')
+                columns = [c for c in self.TS_test.columns if c != "$gid"]
+                self.TS_test = self.TS_test[columns]
                 self.SC_test = static_data.concat(sc_list, axis=0)
 
 class CustomDataset(Dataset):
