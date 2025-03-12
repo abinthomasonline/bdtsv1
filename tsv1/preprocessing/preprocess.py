@@ -28,17 +28,18 @@ class DatasetImporterCustom(object):
 
         # Process training data in batches
         # if static_data_train is not None and temporal_data_train is not None:
-            # First pass: calculate mean and std
+        # First pass: calculate mean and std
         if data_scaling and temporal_data_train is not None:
             self.calculate_statistics(temporal_data_train)
             config['dataset']['mean'] = self.mean.tolist()
             config['dataset']['std'] = self.std.tolist()
             
-            # Second pass: process and scale data
-        self.process_data('train', static_data_train, temporal_data_train, data_scaling)
-        config['dataset']['num_features'] = self.TS_train.obj.shape[1]
-        print(f"TS_train shape: {self.TS_train.obj.shape}")
-        print(f"SC_train shape: {self.SC_train.shape}")
+        # Second pass: process and scale data
+        if static_data_train is not None:
+            self.process_data('train', static_data_train, temporal_data_train, data_scaling)
+            config['dataset']['num_features'] = self.TS_train.obj.shape[1]
+            print(f"TS_train shape: {self.TS_train.obj.shape}")
+            print(f"SC_train shape: {self.SC_train.shape}")
 
         # Process test data in batches
         if static_data_test is not None:
