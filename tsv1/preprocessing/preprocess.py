@@ -159,7 +159,7 @@ class CustomDataset(Dataset):
         self._index = self.SC.index
 
     def __getitem__(self, idx):
-        ts, sc = self.TS.get_group(self._index[idx]), self.SC.get_by_index(self._index[idx])
+        ts, sc = self.TS.get_group(self._index[idx]).values, self.SC.get_by_index(self._index[idx]).values
         return ts, sc
 
     def __len__(self):

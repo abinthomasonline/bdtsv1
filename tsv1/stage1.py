@@ -53,9 +53,6 @@ def train_stage1(config: dict,
     # _, in_channels, input_length = train_data_loader.dataset.TS.shape
     in_channels = len(train_data_loader.dataset.TS.columns)
     size = train_data_loader.dataset.TS.size()
-    print(size)
-    print(size.index[:1])
-    print(size[size.index[:1]])
     input_length = size[size.index[:1]].values[0]
     train_exp = ExpStage1(in_channels, input_length, config)
     
