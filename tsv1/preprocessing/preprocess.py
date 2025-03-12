@@ -29,7 +29,7 @@ class DatasetImporterCustom(object):
         # Process training data in batches
         # if static_data_train is not None and temporal_data_train is not None:
             # First pass: calculate mean and std
-        if data_scaling:
+        if data_scaling and temporal_data_train is not None:
             self.calculate_statistics(temporal_data_train)
             config['dataset']['mean'] = self.mean.tolist()
             config['dataset']['std'] = self.std.tolist()
