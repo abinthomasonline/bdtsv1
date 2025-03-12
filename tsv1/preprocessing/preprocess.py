@@ -139,15 +139,13 @@ class DatasetImporterCustom(object):
                 columns = [c for c in self.TS_train.columns if c != "$gid"]
                 self.TS_train = self.TS_train[columns]
                 self.SC_train = static_data.concat(sc_list, axis=0)
-                print("TS_train shape: ", self.TS_train.shape)
-                print("SC_train shape: ", self.SC_train.shape)
+                print("training dataset processed")
             else:
                 self.TS_test = static_data.concat(ts_list, axis=0).groupby('$gid')
                 columns = [c for c in self.TS_test.columns if c != "$gid"]
                 self.TS_test = self.TS_test[columns]
                 self.SC_test = static_data.concat(sc_list, axis=0)
-                print("TS_test shape: ", self.TS_test.shape)
-                print("SC_test shape: ", self.SC_test.shape)
+                print("testing dataset processed")
         else:
             print("No data to process")
 
