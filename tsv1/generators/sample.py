@@ -163,7 +163,7 @@ def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int
             
             z_low_freq.append(z_low_freq_batch)
             z_high_freq.append(z_high_freq_batch)
-            print(f"z_low_freq shape: {z_low_freq[-1].shape}, z_high_freq shape: {z_high_freq[-1].shape}")
+            # print(f"z_low_freq shape: {z_low_freq[-1].shape}, z_high_freq shape: {z_high_freq[-1].shape}")
         else:
             z_low_freq_batch = extractor(x[b*i:b*(i+1)], encoder_l)
             z_high_freq_batch = extractor(x[b*i:b*(i+1)], encoder_h)
@@ -174,7 +174,7 @@ def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int
             
             z_low_freq.append(z_low_freq_batch)
             z_high_freq.append(z_high_freq_batch)
-            print(f"z_low_freq shape: {z_low_freq[-1].shape}, z_high_freq shape: {z_high_freq[-1].shape}")
+            # print(f"z_low_freq shape: {z_low_freq[-1].shape}, z_high_freq shape: {z_high_freq[-1].shape}")
 
     z_low_freq = torch.cat(z_low_freq)
     z_high_freq = torch.cat(z_high_freq)
