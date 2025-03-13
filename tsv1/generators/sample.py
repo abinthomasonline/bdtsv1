@@ -154,13 +154,28 @@ def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int
         b = batch_size
         if (i+1 == n_iters) and is_residual_batch:
             b = n_samples - ((n_iters-1) * batch_size)
-            z_low_freq.append(extractor(x[n_samples-b:n_samples], encoder_l))
-            z_high_freq.append(extractor(x[n_samples-b:n_samples], encoder_h))
+            z_low_freq_batch = extractor(x[n_samples-b:n_samples], encoder_l)
+            z_high_freq_batch = extractor(x[n_samples-b:n_samples], encoder_h)
+            
+            # Reshape to (B, C, 2, 2) using adaptive max pooling
+            z_low_freq_batch = torch.nn.functional.adaptive_max_pool2d(z_low_freq_batch, (2, 2))
+            z_high_freq_batch = torch.nn.functional.adaptive_max_pool2d(z_high_freq_batch, (2, 2))
+            
+            z_low_freq.append(z_low_freq_batch)
+            z_high_freq.append(z_high_freq_batch)
             print(f"z_low_freq shape: {z_low_freq[-1].shape}, z_high_freq shape: {z_high_freq[-1].shape}")
         else:
-            z_low_freq.append(extractor(x[b*i:b*(i+1)], encoder_l))
-            z_high_freq.append(extractor(x[b*i:b*(i+1)], encoder_h))
+            z_low_freq_batch = extractor(x[b*i:b*(i+1)], encoder_l)
+            z_high_freq_batch = extractor(x[b*i:b*(i+1)], encoder_h)
+            
+            # Reshape to (B, C, 2, 2) using adaptive max pooling
+            z_low_freq_batch = torch.nn.functional.adaptive_max_pool2d(z_low_freq_batch, (2, 2))
+            z_high_freq_batch = torch.nn.functional.adaptive_max_pool2d(z_high_freq_batch, (2, 2))
+            
+            z_low_freq.append(z_low_freq_batch)
+            z_high_freq.append(z_high_freq_batch)
             print(f"z_low_freq shape: {z_low_freq[-1].shape}, z_high_freq shape: {z_high_freq[-1].shape}")
+
     z_low_freq = torch.cat(z_low_freq)
     z_high_freq = torch.cat(z_high_freq)
     
