@@ -158,8 +158,8 @@ def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int
             z_high_freq_batch = extractor(x[n_samples-b:n_samples], encoder_h)
             
             # Reshape to (B, C, 2, 2) using adaptive max pooling
-            z_low_freq_batch = torch.nn.functional.adaptive_max_pool2d(z_low_freq_batch, (2, 2))
-            z_high_freq_batch = torch.nn.functional.adaptive_max_pool2d(z_high_freq_batch, (2, 2))
+            z_low_freq_batch = torch.nn.functional.adaptive_avg_pool2d(z_low_freq_batch, (2, 2))
+            z_high_freq_batch = torch.nn.functional.adaptive_avg_pool2d(z_high_freq_batch, (2, 2))
             
             z_low_freq.append(z_low_freq_batch)
             z_high_freq.append(z_high_freq_batch)
@@ -169,8 +169,8 @@ def extract_embedding_for_relational_components(model: ExpStage1, n_samples: int
             z_high_freq_batch = extractor(x[b*i:b*(i+1)], encoder_h)
             
             # Reshape to (B, C, 2, 2) using adaptive max pooling
-            z_low_freq_batch = torch.nn.functional.adaptive_max_pool2d(z_low_freq_batch, (2, 2))
-            z_high_freq_batch = torch.nn.functional.adaptive_max_pool2d(z_high_freq_batch, (2, 2))
+            z_low_freq_batch = torch.nn.functional.adaptive_avg_pool2d(z_low_freq_batch, (2, 2))
+            z_high_freq_batch = torch.nn.functional.adaptive_avg_pool2d(z_high_freq_batch, (2, 2))
             
             z_low_freq.append(z_low_freq_batch)
             z_high_freq.append(z_high_freq_batch)
