@@ -16,6 +16,7 @@ from tsv1.experiments.exp_stage2 import ExpStage2
 
 from datapip import data_struct as ds
 from datapip.algo.basic import uniform_like
+from datapip.data_struct import configure as C
 
 
 class ts_v1_model:
@@ -65,7 +66,7 @@ class ts_v1_model:
         """
         Train the TSV1 model
         """
-        is_test = ds.BaseSeries.from_uniform(True, index=self.static_train_data.index)
+        is_test = ds.BaseSeries.registry[C.BACKEND].from_uniform(True, index=self.static_train_data.index)
         is_test = uniform_like(is_test, low=0, high=1) <= 0.2
         static_test_data = self.static_train_data[is_test]
         temporal_test_data = self.temporal_train_data.filter(lambda g, d: is_test[g])

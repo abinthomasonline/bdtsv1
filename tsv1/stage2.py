@@ -60,7 +60,9 @@ def train_stage2(config: dict,
 
     # fit
     # n_classes = len(np.unique(train_data_loader.dataset.Y))
-    _, in_channels, input_length = train_data_loader.dataset.TS.shape
+    # _, in_channels, input_length = train_data_loader.dataset.TS.shape
+    in_channels = len(train_data_loader.dataset.TS.columns)
+    input_length = train_data_loader.dataset.TS.size().max()
     train_exp = ExpStage2(saved_models_dir, dataset_name, static_cond_dim, in_channels, input_length, config, feature_extractor_type, use_custom_dataset)
     
     n_trainable_params = sum(p.numel() for p in train_exp.parameters() if p.requires_grad)
