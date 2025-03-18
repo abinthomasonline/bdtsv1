@@ -72,6 +72,7 @@ class Evaluation(nn.Module):
         # load the stage2 model
         if kind == "generation":
             self.stage2 = ExpStage2.load_from_checkpoint(os.path.join(self.saved_models_dir, f'stage2.ckpt'), 
+                                                      saved_models_dir=self.saved_models_dir,
                                                       dataset_name=dataset_name,
                                                       static_cond_dim=static_cond_dim,
                                                       in_channels=in_channels,
