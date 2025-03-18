@@ -193,13 +193,16 @@ class ts_v1_model:
 
         index = test_data_loader.dataset.SC.index
         outputs = []
-        if self.temporal_train_data.columns.nlevels > 1:
-            index_column = tuple(["$index"] + [""] * (self.temporal_train_data.columns.nlevels - 1))
-            all_columns = [index_column, *self.temporal_train_data.columns]
+        columns = torch.load(os.path.join(self.out_dir, "all-temporal-columns.pkl"))
+        if columns.nlevels > 1:
+            index_column = tuple(["$index"] + [""] * (columns.nlevels - 1))
+            all_columns = [index_column, *columns]
             all_columns = ds.BaseIndex.registry[static_condition_data.data_struct].from_tuples(all_columns)
         else:
-            all_columns = ["$index", *self.temporal_train_data.columns]
+            all_columns = ["$index", *columns]
             index_column = "$index"
+
+        
 
         for st in range(0, len(index), self.chunk_size):
             static_conditions = torch.from_numpy(
