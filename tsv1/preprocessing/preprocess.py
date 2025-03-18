@@ -105,11 +105,8 @@ class DatasetImporterCustom(object):
             sc = static_data.get_by_index(batch_ids).values
             if n_temporal_columns > 0:
                 ts = np.zeros((sc.shape[0], self.seq_len * n_temporal_columns), dtype=sc.dtype)
-                print("sizes,", temporal_data.size().max(), self.seq_len, n_temporal_columns, len(temporal_data.columns))
-                print(len(set(temporal_data.groups.tolist())), temporal_data.ngroups)
                 for j, sc_id in enumerate(batch_ids):
                     g_data = temporal_data.get_group(sc_id).values.flatten()
-                    print("shae", ts.shape, g_data.shape)
                     ts[j, :g_data.shape[-1]] = g_data
             else:
                 ts = np.zeros((sc.shape[0], 0), dtype=sc.dtype)
