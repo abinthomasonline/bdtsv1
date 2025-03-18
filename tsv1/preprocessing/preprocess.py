@@ -31,6 +31,8 @@ class DatasetImporterCustom(object):
         # First pass: calculate mean and std
         if data_scaling and temporal_data_train is not None:
             self.calculate_statistics(temporal_data_train)
+            self.mean.astype(np.float32)
+            self.std.astype(np.float32)
             config['dataset']['mean'] = self.mean.tolist()
             config['dataset']['std'] = self.std.tolist()
             

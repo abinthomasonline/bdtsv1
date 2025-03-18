@@ -127,10 +127,28 @@ class Evaluation(nn.Module):
 
         # unscale
         if unscale:
-            x_new_l = x_new_l*self.std + self.mean
-            x_new_h = x_new_h*self.std + self.mean
-            x_new = x_new*self.std + self.mean
-            X_new_R = X_new_R*self.std + self.mean
+            # Convert mean and std to tensors with proper shape if they're not already
+            if not isinstance(self.mean, torch.Tensor):
+                mean = torch.tensor(self.mean, dtype=torch.float32)
+            else:
+                mean = self.mean
+                
+            if not isinstance(self.std, torch.Tensor):
+                std = torch.tensor(self.std, dtype=torch.float32)
+            else:
+                std = self.std
+                
+            # Reshape mean and std if needed
+            if isinstance(mean, torch.Tensor) and mean.dim() == 0:
+                mean = mean.item()  # Convert single element tensor to scalar
+            if isinstance(std, torch.Tensor) and std.dim() == 0:
+                std = std.item()  # Convert single element tensor to scalar
+                
+            # Apply unscaling
+            x_new_l = x_new_l * std + mean
+            x_new_h = x_new_h * std + mean
+            x_new = x_new * std + mean
+            X_new_R = X_new_R * std + mean
 
         return (x_new_l, x_new_h, x_new), X_new_R
     
