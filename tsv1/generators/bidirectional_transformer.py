@@ -136,7 +136,9 @@ class BidirectionalTransformer(nn.Module):
     #         return cls_emb
 
     def static_embedding(self, static_condition, device):
-        cond_emb = self.static_cond_emb(static_condition.to(device)) # (b, 1, static_cond_dim) -> (b, 1, in_dim)
+        # Ensure static_condition has the correct dtype (float32/float)
+        static_condition = static_condition.to(device=device, dtype=torch.float32)
+        cond_emb = self.static_cond_emb(static_condition) # (b, 1, static_cond_dim) -> (b, 1, in_dim)
         cond_emb = cond_emb.unsqueeze(1)
         # print(cond_emb.dtype)
         # assert cond_emb.shape[1] == 1

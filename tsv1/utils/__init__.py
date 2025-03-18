@@ -227,6 +227,9 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
         # Print shape information for debugging
         print(f"time_to_timefreq input shape: {x.shape}, n_fft: {n_fft}, C: {C}")
         
+        # Store original device for later use
+        original_device = x.device
+        
         x = rearrange(x, 'b c l -> (b c) l')
         print(f"x type: {x.type()}, shape after rearrange: {x.shape}, device: {x.device}")
         
@@ -245,10 +248,17 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
                 x_cpu = x.cpu()
                 window_cpu = window.cpu()
                 x = torch.stft(x_cpu, n_fft, normalized=norm, return_complex=True, window=window_cpu)
-                x = x.to(device=x.device)  # Move back to original device
-        
+                print(f"After CPU STFT, tensor device: {x.device}")
+                
         x = torch.view_as_real(x)  # (B, N, T, 2); 2: (real, imag)
         x = rearrange(x, '(b c) n t z -> b (c z) n t ', c=C)  # z=2 (real, imag)
+        
+        # Ensure the result is on the original device before returning
+        if x.device != original_device:
+            print(f"Moving tensor from {x.device} back to {original_device}")
+            x = x.to(original_device)
+        
+        print(f"Final tensor device before return: {x.device}")
         return x  # (B, C, H, W)
     except Exception as e:
         print(f"Error in time_to_timefreq: {e}")

@@ -132,25 +132,35 @@ class VQVAEEncoder(nn.Module):
         :param x: (b c l)
         """
         # Print shapes for debugging
-        # print(f"VQVAEEncoder input shape: {x.shape}")
+        print(f"VQVAEEncoder input shape: {x.shape}, device: {x.device}")
+        
+        # Get the device of encoder parameters for comparison
+        encoder_device = next(self.encoder.parameters()).device
+        print(f"Encoder device: {encoder_device}")
         
         in_channels = x.shape[1]
         x = time_to_timefreq(x, self.n_fft, in_channels)  # (b c h w)
-        # print(f"After time_to_timefreq: {x.shape}")
+        print(f"After time_to_timefreq: {x.shape}, device: {x.device}")
+        
+        # Make sure x is on the same device as the encoder
+        if x.device != encoder_device:
+            print(f"Moving tensor from {x.device} to {encoder_device}")
+            x = x.to(encoder_device)
         
         # Apply padding function
         x = self.pad_func(x, copy=True)   # (b c h w)
-        # print(f"After pad_func: {x.shape}")
+        print(f"After pad_func: {x.shape}, device: {x.device}")
 
         # Pass through encoder
         try:
             out = self.encoder(x)  # (b c h w)
-            # print(f"After encoder: {out.shape}")
+            print(f"After encoder: {out.shape}")
         except RuntimeError as e:
             # Display helpful error message
             print(f"Error in encoder: {e}")
-            print(f"Input shape: {x.shape}")
-            print(f"Expected input channels: {next(self.encoder.parameters()).shape[1]}")
+            print(f"Input shape: {x.shape}, device: {x.device}")
+            print(f"Encoder device: {encoder_device}")
+            print(f"First encoder layer input channels: {next(self.encoder.parameters()).shape[1]}")
             print(f"Actual input channels: {x.shape[1]}")
             raise
         
