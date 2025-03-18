@@ -244,10 +244,15 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
             x = torch.stft(x, n_fft, normalized=norm, return_complex=True, window=window)
         except RuntimeError as e:
             if "CUDA error" in str(e):
-                print("CUDA error in STFT, trying on CPU instead...")
-                x_cpu = x.cpu()
-                window_cpu = window.cpu()
-                x = torch.stft(x_cpu, n_fft, normalized=norm, return_complex=True, window=window_cpu)
+                # print(f"CUDA error in STFT, trying on CPU instead...: {e}")
+                # x_cpu = x.cpu()
+                # window_cpu = window.cpu()
+                # x = torch.stft(x_cpu, n_fft, normalized=norm, return_complex=True, window=window_cpu)
+                batch_size = 10_000
+                all_x = []
+                for i in range(0, x.shape[0], batch_size):
+                    all_x.append(torch.stft(x[i:i + batch_size], n_fft, normalized=norm, return_complex=True, window=window))
+                x = torch.cat(all_x, 0)
                 print(f"After CPU STFT, tensor device: {x.device}")
                 
         x = torch.view_as_real(x)  # (B, N, T, 2); 2: (real, imag)
