@@ -223,14 +223,38 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
     """
     x: (B, C, L)
     """
-    x = rearrange(x, 'b c l -> (b c) l')
-    # print(f"x type: {x.type()}")
-    # Convert to float type before STFT     
-    x = x.float()
-    x = torch.stft(x, n_fft, normalized=norm, return_complex=True, window=torch.hann_window(window_length=n_fft, device=x.device))
-    x = torch.view_as_real(x)  # (B, N, T, 2); 2: (real, imag)
-    x = rearrange(x, '(b c) n t z -> b (c z) n t ', c=C)  # z=2 (real, imag)
-    return x  # (B, C, H, W)
+    try:
+        # Print shape information for debugging
+        print(f"time_to_timefreq input shape: {x.shape}, n_fft: {n_fft}, C: {C}")
+        
+        x = rearrange(x, 'b c l -> (b c) l')
+        print(f"x type: {x.type()}, shape after rearrange: {x.shape}, device: {x.device}")
+        
+        # Convert to float type before STFT
+        x = x.float()
+        
+        # Create window on the same device as x
+        window = torch.hann_window(window_length=n_fft, device=x.device)
+        
+        # Handle potential CUDA errors by moving to CPU if necessary
+        try:
+            x = torch.stft(x, n_fft, normalized=norm, return_complex=True, window=window)
+        except RuntimeError as e:
+            if "CUDA error" in str(e):
+                print("CUDA error in STFT, trying on CPU instead...")
+                x_cpu = x.cpu()
+                window_cpu = window.cpu()
+                x = torch.stft(x_cpu, n_fft, normalized=norm, return_complex=True, window=window_cpu)
+                x = x.to(device=x.device)  # Move back to original device
+        
+        x = torch.view_as_real(x)  # (B, N, T, 2); 2: (real, imag)
+        x = rearrange(x, '(b c) n t z -> b (c z) n t ', c=C)  # z=2 (real, imag)
+        return x  # (B, C, H, W)
+    except Exception as e:
+        print(f"Error in time_to_timefreq: {e}")
+        print(f"Input tensor info - shape: {x.shape}, type: {x.type()}, device: {x.device}")
+        print(f"Parameters - n_fft: {n_fft}, C: {C}, norm: {norm}")
+        raise
 
 
 def timefreq_to_time(x, n_fft: int, C: int, norm:bool=True):
