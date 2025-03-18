@@ -53,9 +53,16 @@ class ExpStage1(pl.LightningModule):
         :param x: input time series (b c l)
         """
         x, y = batch
-
-        # print("data type of x, data type of y", type(x), type(y))
-        # print("shape of x, shape of y", x.shape, y.shape)
+        
+        # Print input dimensions for debugging
+        print(f"Input x shape: {x.shape}, device: {x.device}")
+        print(f"Model device: {next(self.parameters()).device}")
+        
+        # Ensure input is on the same device as the model
+        device = next(self.parameters()).device
+        x = x.to(device)
+        if y is not None:
+            y = y.to(device)
 
         recons_loss = {'LF.time': 0., 'HF.time': 0.}
         vq_losses = {'LF': None, 'HF': None}
