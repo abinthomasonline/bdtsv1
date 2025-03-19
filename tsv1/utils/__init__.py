@@ -309,7 +309,7 @@ def timefreq_to_time(x, n_fft: int, C: int, norm:bool=True):
     
     try:
         # Perform ISTFT
-        x = torch.istft(x, n_fft, normalized=norm, window=window, hop_length=hop_length)
+        x = torch.istft(x, n_fft, normalized=norm, window=window)
         # Reshape result
         x = rearrange(x, '(b c) l -> b c l', c=C)
         return x
