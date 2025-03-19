@@ -230,15 +230,20 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
         # Store original device for later use
         original_device = x.device
         
+        if x.shape[-1] == 1:
+            # Create a dummy tensor with shape (b, c, 99) when x has shape (b, c, 1)
+            dummy = torch.randn(x.shape[0], x.shape[1], 99).to(x.device)
+            x = torch.cat([x, dummy], dim=2)  # Concatenate along dimension 2 (length)
 
         x = rearrange(x, 'b c l -> (b c) l')
         print(f"x type: {x.type()}, shape after rearrange: {x.shape}, device: {x.device}")
         
         # Convert to float type before STFT
         x = x.float()
+
         
         # Create window on the same device as x
-        window = torch.hann_window(window_length=n_fft, device=x.device)
+        window = torch.hann_window(window_length=n_fft, device=x.device)    
 
         # Handle potential CUDA errors by moving to CPU if necessary
         try:
