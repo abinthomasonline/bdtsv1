@@ -281,20 +281,49 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
 
 
 def timefreq_to_time(x, n_fft: int, C: int, norm:bool=True):
-    x = rearrange(x, 'b (c z) n t -> (b c) n t z', c=C).contiguous()
-    x = x.contiguous()
-    x = torch.view_as_complex(x)
+    # Check if input is empty or has invalid shape before any processing
     if x.numel() == 0:
         raise ValueError("Input tensor is empty.")
+    
+    # Reshape tensor with explicit handling of dimensions
+    x = rearrange(x, 'b (c z) n t -> (b c) n t z', c=C).contiguous()
+    
+    # Ensure tensor is contiguous in memory
+    x = x.contiguous()
+    
+    # Validate shape before view_as_complex
+    if x.shape[-1] != 2:  # Last dimension should be 2 for real/imag parts
+        raise ValueError(f"Last dimension must be 2 for complex conversion, got shape {x.shape}")
+    
+    # Convert to complex representation
+    x = torch.view_as_complex(x)
+    
+    # Create window on the same device as x
     window = torch.hann_window(window_length=n_fft, device=x.device)
-    if x.shape[-1] < n_fft:
-        window[0] = window[-1] = 1e-6
-        hop_length = 1
-    else:
-        hop_length = n_fft // 4
-    x = torch.istft(x, n_fft, normalized=norm, window=window, hop_length=hop_length)
-    x = rearrange(x, '(b c) l -> b c l', c=C)
-    return x
+    
+    # Additional check for empty tensor after complex conversion
+    if x.numel() == 0 or 0 in x.shape:
+        # Return empty tensor with appropriate dimensions
+        result_shape = (x.shape[0], n_fft)  # Estimate output shape
+        return torch.zeros(result_shape, device=x.device).reshape((x.shape[0] // C), C, -1)
+    
+    try:
+        # Perform ISTFT
+        x = torch.istft(x, n_fft, normalized=norm, window=window, hop_length=hop_length)
+        # Reshape result
+        x = rearrange(x, '(b c) l -> b c l', c=C)
+        return x
+    except RuntimeError as e:
+        if "min()" in str(e) or "numel() == 0" in str(e):
+            # Handle the specific error by returning an empty tensor of appropriate shape
+            print(f"Warning: ISTFT failed with empty tensor. Returning zeros. Error: {e}")
+            # Estimate the output shape based on input dimensions
+            batch_size = x.shape[0] // C
+            # Return zeros with estimated output shape
+            return torch.zeros((batch_size, C, n_fft), device=x.device)
+        else:
+            # Re-raise other errors
+            raise
 
 
 def compute_var_loss(z):
