@@ -239,7 +239,7 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
         
         # Create window on the same device as x
         window = torch.hann_window(window_length=n_fft, device=x.device)
-        
+
         # Handle potential CUDA errors by moving to CPU if necessary
         try:
             x = torch.stft(x, n_fft, normalized=norm, return_complex=True, window=window)
@@ -284,7 +284,15 @@ def timefreq_to_time(x, n_fft: int, C: int, norm:bool=True):
     x = rearrange(x, 'b (c z) n t -> (b c) n t z', c=C).contiguous()
     x = x.contiguous()
     x = torch.view_as_complex(x)
-    x = torch.istft(x, n_fft, normalized=norm, window=torch.hann_window(window_length=n_fft, device=x.device))
+    if x.numel() == 0:
+        raise ValueError("Input tensor is empty.")
+    window = torch.hann_window(window_length=n_fft, device=x.device)
+    if x.shape[-1] < n_fft:
+        window[0] = window[-1] = 1e-6
+        hop_length = max(1, torch.ceil(x.shape[-1] / 2))
+    else:
+        hop_length = n_fft // 2
+    x = torch.istft(x, n_fft, normalized=norm, window=window, hop_length=hop_length)
     x = rearrange(x, '(b c) l -> b c l', c=C)
     return x
 
