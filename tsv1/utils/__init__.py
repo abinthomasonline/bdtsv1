@@ -257,7 +257,7 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
                 print(f"After CPU STFT, tensor device: {x.device}")
 
 
-        if torch.is_real_tensor(x):
+        if not torch.is_complex(x):
             x = torch.complex(x, torch.zeros_like(x))
             print(f"x is real, converted to complex: {x.shape}")
         x = torch.view_as_real(x)  # (B, N, T, 2); 2: (real, imag)
