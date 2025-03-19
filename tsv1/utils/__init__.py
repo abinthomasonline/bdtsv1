@@ -289,7 +289,7 @@ def timefreq_to_time(x, n_fft: int, C: int, norm:bool=True):
     window = torch.hann_window(window_length=n_fft, device=x.device)
     if x.shape[-1] < n_fft:
         window[0] = window[-1] = 1e-6
-        hop_length = max(1, torch.ceil(x.shape[-1] / 4))
+        hop_length = 1
     else:
         hop_length = n_fft // 4
     x = torch.istft(x, n_fft, normalized=norm, window=window, hop_length=hop_length)
