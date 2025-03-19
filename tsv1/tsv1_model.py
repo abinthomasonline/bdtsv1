@@ -229,7 +229,7 @@ class ts_v1_model:
 
         outputs = static_condition_data.concat(outputs, ignore_index=True, axis=0)
 
-        return outputs.groupby(index_column)[self.temporal_train_data.columns]
+        return outputs.groupby(index_column)[columns]
 
 
 
