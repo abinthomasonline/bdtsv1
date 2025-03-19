@@ -206,8 +206,9 @@ class ts_v1_model:
         
 
         for st in range(0, len(index), self.chunk_size):
+            batch_index = index[st:st + self.chunk_size]
             static_conditions = torch.from_numpy(
-                test_data_loader.dataset.SC.get_by_index(index[st:st + self.chunk_size]).values
+                test_data_loader.dataset.SC.get_by_index(batch_index).values
             )
 
             # generate synthetic data
@@ -220,12 +221,14 @@ class ts_v1_model:
             torch.cuda.empty_cache()
             ####
             syn_data = syn_data.view(syn_data.shape[0], self.seq_len, -1)
-            syn_data = torch.cat([
-                torch.arange(syn_data.shape[0]).view(-1, 1, 1).repeat(1, syn_data.shape[1], 1) + st, syn_data
-            ], dim=-1).view(-1, syn_data.shape[-1] + 1)
-            outputs.append(static_condition_data.from_pandas(
-                pd.DataFrame(syn_data.numpy(), columns=all_columns)
-            ))
+            # syn_data = torch.cat([
+            #     torch.arange(syn_data.shape[0]).view(-1, 1, 1).repeat(1, syn_data.shape[1], 1) + st, syn_data
+            # ], dim=-1).view(-1, syn_data.shape[-1] + 1)
+            batch_data = static_condition_data.from_pandas(
+                pd.DataFrame(syn_data.view(-1, syn_data.shape[-1]).numpy(), columns=columns)
+            )
+            batch_data.set_by_column(index_column, batch_index.repeat(self.seq_len).to_series())
+            outputs.append(batch_data)
 
         outputs = static_condition_data.concat(outputs, ignore_index=True, axis=0)
 
