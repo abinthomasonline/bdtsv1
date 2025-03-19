@@ -230,6 +230,10 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
         # Store original device for later use
         original_device = x.device
         
+        if x.shape[-1] == 1:
+            x = torch.cat((x, x), dim=2)
+            print(f"Hardcoded to handle single channel, new shape: {x.shape}")
+            
         x = rearrange(x, 'b c l -> (b c) l')
         print(f"x type: {x.type()}, shape after rearrange: {x.shape}, device: {x.device}")
         
