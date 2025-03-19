@@ -230,10 +230,7 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
         # Store original device for later use
         original_device = x.device
         
-        if x.shape[-1] == 1:
-            x = torch.cat((x, x), dim=2)
-            print(f"Hardcoded to handle single channel, new shape: {x.shape}")
-            
+
         x = rearrange(x, 'b c l -> (b c) l')
         print(f"x type: {x.type()}, shape after rearrange: {x.shape}, device: {x.device}")
         
@@ -258,7 +255,9 @@ def time_to_timefreq(x, n_fft: int, C: int, norm:bool=True):
                     all_x.append(torch.stft(x[i:i + batch_size], n_fft, normalized=norm, return_complex=True, window=window))
                 x = torch.cat(all_x, 0)
                 print(f"After CPU STFT, tensor device: {x.device}")
-                
+
+        if x.shape[-1] == 1:
+            x = torch.cat((x, x), dim=2)
         x = torch.view_as_real(x)  # (B, N, T, 2); 2: (real, imag)
         x = rearrange(x, '(b c) n t z -> b (c z) n t ', c=C)  # z=2 (real, imag)
         
