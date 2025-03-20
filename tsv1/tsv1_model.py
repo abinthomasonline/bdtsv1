@@ -225,7 +225,7 @@ class ts_v1_model:
             #     torch.arange(syn_data.shape[0]).view(-1, 1, 1).repeat(1, syn_data.shape[1], 1) + st, syn_data
             # ], dim=-1).view(-1, syn_data.shape[-1] + 1)
             batch_data = static_condition_data.from_pandas(
-                pd.DataFrame(syn_data.view(-1, syn_data.shape[-1]).numpy(), columns=columns)
+                pd.DataFrame(syn_data.contiguous().view(-1, syn_data.shape[-1]).numpy(), columns=columns)
             )
             batch_data.set_by_column(index_column, batch_index.repeat(self.seq_len).to_series())
             outputs.append(batch_data)
