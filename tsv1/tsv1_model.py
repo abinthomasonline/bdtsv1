@@ -196,14 +196,24 @@ class ts_v1_model:
         outputs = []
         columns = torch.load(os.path.join(self.out_dir, "all-temporal-columns.pkl"))
         if columns.nlevels > 1:
-            index_column = tuple(["$index"] + [""] * (columns.nlevels - 1))
-            all_columns = [index_column, *columns]
-            all_columns = ds.BaseIndex.registry[static_condition_data.data_struct].from_tuples(all_columns)
+            if static_condition_data.index.nlevels == 1:
+                index_column = tuple(["$index"] + [""] * (columns.nlevels - 1))
+                all_columns = [index_column, *columns]
+                all_columns = ds.BaseIndex.registry[static_condition_data.data_struct].from_tuples(all_columns)
+            else:
+                index_column = [
+                    tuple([f"$index{i}"] + [""] * (columns.nlevels - 1))
+                    for i in range(static_condition_data.index.nlevels)
+                ]
+                all_columns = [*index_column, *columns]
+                all_columns = ds.BaseIndex.registry[static_condition_data.data_struct].from_tuples(all_columns)
         else:
-            all_columns = ["$index", *columns]
-            index_column = "$index"
-
-        
+            if static_condition_data.index.nlevels == 1:
+                all_columns = ["$index", *columns]
+                index_column = "$index"
+            else:
+                index_column = [f"$index{i}" for i in range(static_condition_data.index.nlevels)]
+                all_columns = [*index_column, *columns]
 
         for st in range(0, len(index), self.chunk_size):
             batch_index = index[st:st + self.chunk_size]
@@ -227,7 +237,14 @@ class ts_v1_model:
             batch_data = static_condition_data.from_pandas(
                 pd.DataFrame(syn_data.contiguous().view(-1, syn_data.shape[-1]).numpy(), columns=columns)
             )
-            batch_data.set_by_column(index_column, batch_index.repeat(self.seq_len).to_series())
+            if static_condition_data.index.nlevels == 1:
+                batch_data.set_by_column(index_column, batch_index.repeat(self.seq_len).to_series())
+            else:
+                repeated = batch_index.repeat(self.seq_len)
+                new_index = static_condition_data.concat([
+                    repeated.get_level_values(i).to_series() for i in range(static_condition_data.index.nlevels)
+                ], axis=1)
+                batch_data.set_by_column(index_column, new_index)
             outputs.append(batch_data)
 
         outputs = static_condition_data.concat(outputs, ignore_index=True, axis=0)
