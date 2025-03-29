@@ -3,7 +3,7 @@
 """
 import os
 import json
-from typing import Union
+from typing import Union, Sequence
 import math
 
 import numpy as np
@@ -60,7 +60,7 @@ class DatasetImporterCustom(object):
         # First pass: calculate mean
         all_index = temporal_data.groups
         n_temporal_columns = len(temporal_data.columns)
-        for i in range(0, all_index.to_series().shape[0], self.batch_size):
+        for i in range(0, len(all_index), self.batch_size):
             # Split into time series and static conditions
             batch_ids = all_index[i:i + self.batch_size]
             actual_batch_size = batch_ids.to_series().shape[0]
@@ -133,7 +133,11 @@ class DatasetImporterCustom(object):
                     ts.swapaxes(1, 2).reshape((ts.shape[0] * self.seq_len), -1),
                     columns=[f"col{j}" for j in range(ts.shape[1])]
                 )
-                ts_df["$gid"] = gids if len(gids.shape) == 1 else gids[:, 0]
+                gid_cols = gids if len(gids.shape) == 1 else gids[:, 0]
+                num_group_cols = len(gid_cols[0]) if isinstance(gid_cols[0], Sequence) else 1
+                gid_col_names = [f'$gid_{i}' for i in range(num_group_cols)]
+                gid_cols = pd.DataFrame(list(gid_cols), columns=gid_col_names)
+                ts_df[gid_col_names] =gid_cols 
                 ts_list.append(static_data.from_pandas(ts_df))
                 sc_list.append(static_data.from_pandas(pd.DataFrame(sc), index=batch_ids))
         
@@ -141,14 +145,14 @@ class DatasetImporterCustom(object):
         if ts_list:
             print("dataloader kind: ", kind)
             if kind == 'train':
-                self.TS_train = static_data.concat(ts_list, axis=0).groupby('$gid')
-                columns = [c for c in self.TS_train.columns if c != "$gid"]
+                self.TS_train = static_data.concat(ts_list, axis=0).groupby(gid_col_names)
+                columns = [c for c in self.TS_train.columns if c not in  gid_col_names]
                 self.TS_train = self.TS_train[columns]
                 self.SC_train = static_data.concat(sc_list, axis=0)
                 print("training dataset processed")
             else:
-                self.TS_test = static_data.concat(ts_list, axis=0).groupby('$gid')
-                columns = [c for c in self.TS_test.columns if c != "$gid"]
+                self.TS_test = static_data.concat(ts_list, axis=0).groupby(gid_col_names)
+                columns = [c for c in self.TS_test.columns if c not in  gid_col_names]
                 self.TS_test = self.TS_test[columns]
                 self.SC_test = static_data.concat(sc_list, axis=0)
                 print("testing dataset processed")
