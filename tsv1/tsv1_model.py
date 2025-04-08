@@ -238,12 +238,17 @@ class ts_v1_model:
                 pd.DataFrame(syn_data.contiguous().view(-1, syn_data.shape[-1]).numpy(), columns=columns)
             )
             if static_condition_data.index.nlevels == 1:
-                batch_data.set_by_column(index_column, batch_index.repeat(self.seq_len).to_series())
+                vals = batch_index.repeat(self.seq_len).to_series()
+                vals.reset_index()
+                batch_data.set_by_column(index_column, vals)
             else:
                 repeated = batch_index.repeat(self.seq_len)
-                new_index = static_condition_data.concat([
-                    repeated.get_level_values(i).to_series() for i in range(static_condition_data.index.nlevels)
-                ], axis=1)
+                new_index = []
+                for i in range(static_condition_data.index.nlevels):
+                    ni = repeated.get_level_values(i).to_series()
+                    ni.reset_index()
+                    new_index.append(ni)
+                new_index = static_condition_data.concat(new_index, axis=1)
                 batch_data.set_by_column(index_column, new_index)
             outputs.append(batch_data)
 
